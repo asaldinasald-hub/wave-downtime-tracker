@@ -116,6 +116,8 @@ body {
     z-index: 12;
     pointer-events: none;
     animation: cloudFloat 3s ease-in-out infinite;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 .decorative-cloud::before {
@@ -143,14 +145,16 @@ body {
 .decorative-cloud-2 {
     position: absolute;
     top: 32px;
-    right: -50px;
+    right: -30px;
     width: 45px;
     height: 18px;
     background: rgba(147, 197, 253, 0.9625);
     border-radius: 50px;
-    z-index: 12;
+    z-index: 13;
     pointer-events: none;
     animation: cloudFloat 3s ease-in-out infinite 0.5s;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
 .decorative-cloud-2::before {
