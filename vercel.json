@@ -9,6 +9,10 @@
     {
       "source": "/api/wave",
       "destination": "/api/wave.js"
+    },
+    {
+      "source": "/api/roblox",
+      "destination": "/api/roblox.js"
     }
   ]
 }

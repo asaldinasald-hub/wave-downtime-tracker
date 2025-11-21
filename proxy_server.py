@@ -24,7 +24,35 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
         sys.stderr.write(f'GET request for: {self.path}\n')
         sys.stderr.flush()
         
-        if self.path == '/api/wave':
+        if self.path == '/api/roblox':
+            try:
+                sys.stderr.write('Fetching Roblox version from API...\n')
+                sys.stderr.flush()
+                
+                # Создаем запрос к API с правильным User-Agent
+                req = urllib.request.Request(
+                    'https://weao.xyz/api/versions/current',
+                    headers={'User-Agent': 'WEAO-3PService'}
+                )
+                
+                with urllib.request.urlopen(req, timeout=10) as response:
+                    data = response.read()
+                    sys.stderr.write(f'Roblox API Response received: {len(data)} bytes\n')
+                    sys.stderr.flush()
+                    
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                self.wfile.write(data)
+            except Exception as e:
+                sys.stderr.write(f'Error fetching Roblox API: {e}\n')
+                sys.stderr.flush()
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json')
+                self.end_headers()
+                error_data = json.dumps({'error': str(e)}).encode()
+                self.wfile.write(error_data)
+        elif self.path == '/api/wave':
             try:
                 sys.stderr.write('Fetching Wave status from API...\n')
                 sys.stderr.flush()

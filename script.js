@@ -1,5 +1,6 @@
 // Configuration
 const API_URL = '/api/wave'; // Используем локальный прокси
+const ROBLOX_API_URL = '/api/roblox'; // Roblox versions API
 const REFRESH_INTERVAL = 30000; // 30 seconds
 const STORAGE_KEY = 'waveDowntimeData';
 
@@ -41,6 +42,23 @@ function saveData() {
         }));
     } catch (e) {
         console.error('Error saving data:', e);
+    }
+}
+
+// Fetch Roblox version info
+async function fetchRobloxVersion() {
+    try {
+        const response = await fetch(ROBLOX_API_URL);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error fetching Roblox version:', error);
+        return null;
     }
 }
 
@@ -136,7 +154,7 @@ function updateStatsDisplay() {
 }
 
 // Update UI
-function updateUI(data) {
+async function updateUI(data) {
     const versionElement = document.getElementById('version');
     const statusTextElement = document.getElementById('statusText');
     const statusIndicatorElement = document.getElementById('statusIndicator');
@@ -159,11 +177,13 @@ function updateUI(data) {
     
     console.log('Update Status:', data.updateStatus, 'Is Down:', isCurrentlyDown);
     
-    // Parse API updated date
-    if (data.updatedDate) {
-        const apiTimestamp = parseApiDate(data.updatedDate);
-        if (apiTimestamp) {
-            currentState.apiDownSince = apiTimestamp;
+    // Получаем время обновления Roblox для Windows
+    const robloxData = await fetchRobloxVersion();
+    if (robloxData && robloxData.WindowsDate) {
+        const robloxTimestamp = parseApiDate(robloxData.WindowsDate);
+        if (robloxTimestamp) {
+            currentState.apiDownSince = robloxTimestamp;
+            console.log('Roblox Windows updated at:', robloxData.WindowsDate);
         }
     }
     
@@ -218,12 +238,12 @@ async function init() {
     
     // Initial fetch
     const data = await fetchWaveStatus();
-    updateUI(data);
+    await updateUI(data);
     
     // Set up refresh interval
     setInterval(async () => {
         const data = await fetchWaveStatus();
-        updateUI(data);
+        await updateUI(data);
     }, REFRESH_INTERVAL);
     
     // Update timer every second when down
