@@ -276,8 +276,24 @@ body {
     pointer-events: none;
 }
 
-/* Анимация в цветах Wave для обеих карточек */
-.author-card::before,
+/* Радужная анимация для автора */
+.author-card::before {
+    background: linear-gradient(
+        90deg,
+        #ff0000,
+        #ff7f00,
+        #ffff00,
+        #00ff00,
+        #0000ff,
+        #4b0082,
+        #9400d3,
+        #ff0000
+    );
+    background-size: 200% 100%;
+    animation: rainbow 3s linear infinite;
+}
+
+/* Анимация в цветах Wave для ссылки */
 .wave-card::before {
     background: linear-gradient(
         90deg,
@@ -289,6 +305,11 @@ body {
     );
     background-size: 200% 100%;
     animation: waveGlow 3s linear infinite;
+}
+
+@keyframes rainbow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
 }
 
 @keyframes waveGlow {
