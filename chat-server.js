@@ -185,6 +185,11 @@ setInterval(() => {
     saveData();
 }, 5 * 60 * 1000);
 
+// Логирование статистики каждые 60 секунд
+setInterval(() => {
+    console.log(`📊 Stats: ${allConnections.size} total connections | ${users.size} registered users | ${messages.length} messages`);
+}, 60 * 1000);
+
 // Clean old messages periodically
 setInterval(() => {
     const now = Date.now();
@@ -231,18 +236,20 @@ const allConnections = new Set(); // Все активные socket соедин
 
 io.on('connection', (socket) => {
     const clientIP = getClientIP(socket);
-    console.log('New connection:', socket.id, 'IP:', clientIP);
-    
-    // Проверяем не забанен ли IP
-    if (bannedIPs.has(clientIP)) {
-        console.log('Banned IP attempted to connect:', clientIP);
-        socket.emit('banned');
-        socket.disconnect(true);
-        return;
-    }
     
     // Добавляем в список всех подключенных
     allConnections.add(socket.id);
+    
+    console.log(`🔗 New connection: ${socket.id} | IP: ${clientIP} | Transport: ${socket.conn.transport.name} | Total online: ${allConnections.size}`);
+    
+    // Проверяем не забанен ли IP
+    if (bannedIPs.has(clientIP)) {
+        console.log('🚫 Banned IP attempted to connect:', clientIP);
+        socket.emit('banned');
+        socket.disconnect(true);
+        allConnections.delete(socket.id); // Сразу удаляем забаненного
+        return;
+    }
     
     // Send current online count (всех на сайте)
     io.emit('onlineCount', allConnections.size);
@@ -596,8 +603,12 @@ io.on('connection', (socket) => {
     });
     
     socket.on('disconnect', () => {
-        // Удаляем из общего списка подключений
-        allConnections.delete(socket.id);
+        // ВАЖНО: Удаляем из общего списка подключений в любом случае
+        const wasInSet = allConnections.delete(socket.id);
+        
+        if (!wasInSet) {
+            console.log(`⚠️ Warning: Socket ${socket.id} was not in allConnections set`);
+        }
         
         // Обновляем счетчик для всех
         io.emit('onlineCount', allConnections.size);
@@ -611,9 +622,9 @@ io.on('connection', (socket) => {
                 onlineCount: allConnections.size
             });
             
-            console.log(`User left: ${user.nickname}, total online: ${allConnections.size}`);
+            console.log(`👤 User left: ${user.nickname} | Socket: ${socket.id} | Total online: ${allConnections.size}`);
         } else {
-            console.log(`Connection closed: ${socket.id}, total online: ${allConnections.size}`);
+            console.log(`🔌 Connection closed: ${socket.id} | Total online: ${allConnections.size}`);
         }
     });
 });
