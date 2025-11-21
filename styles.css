@@ -935,7 +935,8 @@ body {
     text-decoration: none;
     font-weight: 600;
     transition: all 0.3s;
-    vertical-align: middle;
+    vertical-align: baseline;
+    line-height: 1;
 }
 
 .discord-link:hover {
