@@ -74,7 +74,7 @@ function setupSocketListeners() {
     socket.on('nicknameAccepted', (data) => {
         currentUser = data.user;
         isAdmin = data.isAdmin;
-        saveNickname(data.user.nickname);
+        saveNickname(data.user.nickname, data.user.id, data.user.avatarHue);
         document.getElementById('welcomeNickname').textContent = data.user.nickname;
         showChatInterface();
         if (isAdmin) {
@@ -97,19 +97,30 @@ function setupSocketListeners() {
 }
 
 function loadSavedNickname() {
-    const saved = localStorage.getItem('chatNickname');
-    if (saved) {
-        const nicknameInput = document.getElementById('nicknameInput');
-        nicknameInput.value = saved;
+    const savedNickname = localStorage.getItem('chatNickname');
+    const savedUserId = localStorage.getItem('chatUserId');
+    const savedAvatarHue = localStorage.getItem('chatAvatarHue');
+    
+    if (savedNickname && savedUserId && savedAvatarHue) {
+        // Автоматически входим с сохраненными данными
+        socket.emit('rejoin', {
+            id: savedUserId,
+            nickname: savedNickname,
+            avatarHue: parseInt(savedAvatarHue)
+        });
     }
 }
 
-function saveNickname(nickname) {
+function saveNickname(nickname, userId, avatarHue) {
     localStorage.setItem('chatNickname', nickname);
+    localStorage.setItem('chatUserId', userId);
+    localStorage.setItem('chatAvatarHue', avatarHue.toString());
 }
 
 function clearNickname() {
     localStorage.removeItem('chatNickname');
+    localStorage.removeItem('chatUserId');
+    localStorage.removeItem('chatAvatarHue');
     currentUser = null;
     isAdmin = false;
     document.getElementById('welcomeNickname').textContent = '';
@@ -305,4 +316,11 @@ function banUser(userId, nickname) {
 // Initialize chat when page loads
 document.addEventListener('DOMContentLoaded', () => {
     initializeChat();
+    
+    // Уведомляем сервер что мы на сайте (для подсчета онлайн)
+    window.addEventListener('beforeunload', () => {
+        if (socket && socket.connected) {
+            socket.disconnect();
+        }
+    });
 });
