@@ -20,7 +20,7 @@ app.use(cors());
 app.use(express.json());
 
 // MongoDB connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://wavechat:ANHIFKU6K27QlzhE@cluster0.icmtcjp.mongodb.net/?appName=Cluster0';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://wavechat:Wave2025@cluster0.icmtcjp.mongodb.net/wave-chat?retryWrites=true&w=majority&appName=Cluster0';
 const DB_NAME = 'wave-chat';
 let db = null;
 let mongoClient = null;
