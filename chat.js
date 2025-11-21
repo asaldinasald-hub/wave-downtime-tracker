@@ -82,6 +82,18 @@ function setupSocketListeners() {
         }
     });
     
+    socket.on('savedIPData', (data) => {
+        // Получены сохраненные данные по IP - используем их для автозаполнения
+        console.log('Received saved IP data:', data);
+        if (data && data.nickname && data.avatarHue !== undefined) {
+            // Если есть сохраненные данные, сразу скрываем форму и показываем приветствие
+            document.getElementById('nicknameInput').value = data.nickname;
+            document.getElementById('nicknameSetup').classList.add('hidden');
+            document.getElementById('chatWelcome').classList.remove('hidden');
+            document.getElementById('welcomeNickname').textContent = data.nickname;
+        }
+    });
+    
     socket.on('banned', () => {
         showError('You have been banned from the chat');
         clearNickname();
@@ -102,9 +114,15 @@ function loadSavedNickname() {
     const savedAvatarHue = localStorage.getItem('chatAvatarHue');
     
     if (savedNickname && savedUserId && savedAvatarHue) {
-        // Сразу скрываем форму ввода никнейма
-        document.getElementById('nicknameSetup').classList.add('hidden');
-        document.getElementById('chatWelcome').classList.remove('hidden');
+        // Немедленно и навсегда скрываем форму ввода никнейма
+        const nicknameSetup = document.getElementById('nicknameSetup');
+        nicknameSetup.style.display = 'none'; // Принудительное скрытие
+        nicknameSetup.classList.add('hidden');
+        
+        const chatWelcome = document.getElementById('chatWelcome');
+        chatWelcome.style.display = 'block'; // Принудительное показание
+        chatWelcome.classList.remove('hidden');
+        
         document.getElementById('welcomeNickname').textContent = savedNickname;
         
         // Автоматически входим с сохраненными данными
@@ -158,8 +176,14 @@ function showNicknameSetup() {
 }
 
 function showChatInterface() {
-    document.getElementById('nicknameSetup').classList.add('hidden');
-    document.getElementById('chatWelcome').classList.remove('hidden');
+    const nicknameSetup = document.getElementById('nicknameSetup');
+    nicknameSetup.style.display = 'none'; // Принудительное скрытие навсегда
+    nicknameSetup.classList.add('hidden');
+    
+    const chatWelcome = document.getElementById('chatWelcome');
+    chatWelcome.style.display = 'block'; // Принудительное показание
+    chatWelcome.classList.remove('hidden');
+    
     document.getElementById('chatContainer').classList.remove('hidden');
 }
 

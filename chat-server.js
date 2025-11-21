@@ -19,6 +19,7 @@ app.use(express.json());
 // In-memory storage (for production, use a database like MongoDB or PostgreSQL)
 const users = new Map(); // userId -> { id, nickname, socketId, avatarHue, joinedAt, isAdmin, ip }
 const registeredUsers = new Map(); // Permanent storage: userId -> { id, nickname, avatarHue, isAdmin, ip }
+const ipToUser = new Map(); // IP -> { nickname, avatarHue } - хранение никнейма и аватара по IP
 const messages = []; // Array of messages
 const bannedUsers = new Set(); // Set of banned userIds
 const bannedNicknames = new Set(); // Set of permanently banned nicknames (lowercase)
@@ -104,6 +105,13 @@ io.on('connection', (socket) => {
     // Send current online count (всех на сайте)
     io.emit('onlineCount', allConnections.size);
     
+    // Отправляем сохраненные данные по IP, если они есть
+    if (ipToUser.has(clientIP)) {
+        const savedData = ipToUser.get(clientIP);
+        socket.emit('savedIPData', savedData);
+        console.log('Sent saved data for IP:', clientIP, savedData);
+    }
+    
     socket.on('setNickname', (nickname) => {
         // Повторная проверка IP при попытке установить никнейм
         if (bannedIPs.has(clientIP)) {
@@ -160,6 +168,13 @@ io.on('connection', (socket) => {
             isAdmin: user.isAdmin,
             ip: clientIP
         });
+        
+        // Сохраняем никнейм и аватар по IP
+        ipToUser.set(clientIP, {
+            nickname: user.nickname,
+            avatarHue: user.avatarHue
+        });
+        console.log('Saved IP data:', clientIP, '-> nickname:', user.nickname, 'hue:', user.avatarHue);
         
         // Send acceptance and user data
         socket.emit('nicknameAccepted', {
@@ -307,6 +322,7 @@ io.on('connection', (socket) => {
         // Блокируем IP адрес навсегда
         if (targetUser.ip) {
             bannedIPs.add(targetUser.ip);
+            ipToUser.delete(targetUser.ip); // Удаляем сохраненные данные
             console.log(`Banned IP: ${targetUser.ip} (user: ${targetUser.nickname})`);
         }
         
