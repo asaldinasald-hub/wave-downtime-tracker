@@ -599,11 +599,44 @@ app.post('/admin/clear-bans', express.json(), (req, res) => {
     bannedUsers.clear();
     bannedNicknames.clear();
     
+    saveData(); // Сохраняем после очистки
+    
     console.log('All bans cleared by admin:', stats);
     
     res.json({
         success: true,
         message: 'All bans cleared',
+        stats: stats
+    });
+});
+
+// Clear all registered users (requires admin key)
+app.post('/admin/clear-users', express.json(), (req, res) => {
+    const { adminKey } = req.body;
+    
+    if (adminKey !== 'mefisto_admin_2025') {
+        return res.status(403).json({ error: 'Invalid admin key' });
+    }
+    
+    const stats = {
+        registeredUsersCleared: registeredUsers.size,
+        ipToUserCleared: ipToUser.size,
+        activeUsersCleared: users.size
+    };
+    
+    // Очищаем всех пользователей
+    registeredUsers.clear();
+    ipToUser.clear();
+    users.clear();
+    adminId = null; // Сбрасываем админа
+    
+    saveData();
+    
+    console.log('All users cleared by admin:', stats);
+    
+    res.json({
+        success: true,
+        message: 'All users cleared',
         stats: stats
     });
 });
