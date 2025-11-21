@@ -64,8 +64,10 @@ function saveData() {
             timestamp: Date.now()
         };
         
+        // Для Render: данные сохраняются только в памяти, файл используется как резерв
+        // ВНИМАНИЕ: файлы на Render удаляются при каждом деплое!
         fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-        console.log('Data saved to file');
+        console.log('Data saved to file (WARNING: Render ephemeral storage - will be lost on redeploy)');
     } catch (error) {
         console.error('Error saving data:', error);
     }
@@ -300,8 +302,28 @@ io.on('connection', (socket) => {
         }
         
         // Handle reconnection with existing nickname
-        if (userData && userData.id && registeredUsers.has(userData.id)) {
-            const registeredUser = registeredUsers.get(userData.id);
+        if (userData && userData.id) {
+            // ИСПРАВЛЕНИЕ: если пользователь не найден в registeredUsers (после редеплоя),
+            // используем данные из localStorage клиента
+            let registeredUser = registeredUsers.get(userData.id);
+            
+            if (!registeredUser) {
+                // Восстанавливаем пользователя из данных клиента
+                console.log(`Restoring user from client data: ${userData.nickname} (${userData.id})`);
+                registeredUser = {
+                    id: userData.id,
+                    nickname: userData.nickname,
+                    avatarHue: userData.avatarHue || generateAvatarHue(),
+                    isAdmin: userData.isAdmin || false,
+                    ip: clientIP
+                };
+                registeredUsers.set(userData.id, registeredUser);
+                ipToUser.set(clientIP, {
+                    nickname: registeredUser.nickname,
+                    avatarHue: registeredUser.avatarHue
+                });
+                saveData();
+            }
             
             // Проверяем не забанен ли пользователь по ID
             if (bannedUsers.has(userData.id)) {
