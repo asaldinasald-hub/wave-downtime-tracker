@@ -7,13 +7,20 @@
     "chat": "node chat-server.js",
     "chat:dev": "nodemon chat-server.js"
   },
-  "keywords": ["wave", "downtime", "tracker", "roblox", "chat"],
+  "keywords": [
+    "wave",
+    "downtime",
+    "tracker",
+    "roblox",
+    "chat"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2",
-    "socket.io": "^4.7.2",
     "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "mongodb": "^7.0.0",
+    "socket.io": "^4.7.2",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

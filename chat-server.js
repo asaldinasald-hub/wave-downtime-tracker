@@ -5,6 +5,7 @@ const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const path = require('path');
+const { MongoClient } = require('mongodb');
 
 const app = express();
 const server = http.createServer(app);
@@ -18,7 +19,13 @@ const io = socketIo(server, {
 app.use(cors());
 app.use(express.json());
 
-// Путь к файлу для сохранения данных
+// MongoDB connection
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
+const DB_NAME = 'wave-chat';
+let db = null;
+let mongoClient = null;
+
+// Путь к файлу для сохранения данных (резервный вариант)
 const DATA_FILE = path.join(__dirname, 'chat-data.json');
 
 // In-memory storage (for production, use a database like MongoDB or PostgreSQL)
@@ -50,8 +57,28 @@ function getClientIP(socket) {
     return socket.handshake.address;
 }
 
+// Подключение к MongoDB
+async function connectDB() {
+    try {
+        if (MONGODB_URI.includes('mongodb://localhost') || !MONGODB_URI.includes('mongodb')) {
+            console.log('MongoDB not configured, using file storage only');
+            return false;
+        }
+        
+        mongoClient = new MongoClient(MONGODB_URI);
+        await mongoClient.connect();
+        db = mongoClient.db(DB_NAME);
+        console.log('Connected to MongoDB successfully');
+        return true;
+    } catch (error) {
+        console.error('MongoDB connection error:', error.message);
+        console.log('Falling back to file storage');
+        return false;
+    }
+}
+
 // Функции для сохранения и загрузки данных
-function saveData() {
+async function saveData() {
     try {
         const data = {
             registeredUsers: Array.from(registeredUsers.entries()),
@@ -64,43 +91,79 @@ function saveData() {
             timestamp: Date.now()
         };
         
-        // Для Render: данные сохраняются только в памяти, файл используется как резерв
-        // ВНИМАНИЕ: файлы на Render удаляются при каждом деплое!
-        fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-        console.log('Data saved to file (WARNING: Render ephemeral storage - will be lost on redeploy)');
+        // Сохраняем в MongoDB если подключено
+        if (db) {
+            await db.collection('chatData').updateOne(
+                { _id: 'main' },
+                { $set: data },
+                { upsert: true }
+            );
+            console.log('Data saved to MongoDB');
+        } else {
+            // Fallback: файл (не работает на Render при деплое)
+            fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+            console.log('Data saved to file (WARNING: Render ephemeral storage)');
+        }
     } catch (error) {
         console.error('Error saving data:', error);
     }
 }
 
-function loadData() {
+async function loadData() {
     try {
-        if (fs.existsSync(DATA_FILE)) {
-            const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-            
+        let data = null;
+        
+        // Пытаемся загрузить из MongoDB
+        if (db) {
+            const result = await db.collection('chatData').findOne({ _id: 'main' });
+            if (result) {
+                data = result;
+                console.log('Data loaded from MongoDB');
+            }
+        }
+        
+        // Fallback: загружаем из файла
+        if (!data && fs.existsSync(DATA_FILE)) {
+            data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+            console.log('Data loaded from file');
+        }
+        
+        if (data) {
             // Восстанавливаем зарегистрированных пользователей
-            data.registeredUsers.forEach(([userId, user]) => {
-                registeredUsers.set(userId, user);
-            });
+            if (data.registeredUsers) {
+                data.registeredUsers.forEach(([userId, user]) => {
+                    registeredUsers.set(userId, user);
+                });
+            }
             
             // Восстанавливаем IP -> User mapping
-            data.ipToUser.forEach(([ip, userData]) => {
-                ipToUser.set(ip, userData);
-            });
+            if (data.ipToUser) {
+                data.ipToUser.forEach(([ip, userData]) => {
+                    ipToUser.set(ip, userData);
+                });
+            }
             
             // Восстанавливаем сообщения (только за последние 24 часа)
-            const now = Date.now();
-            const cutoff = now - MESSAGE_RETENTION_TIME;
-            data.messages.forEach(msg => {
-                if (msg.timestamp > cutoff) {
-                    messages.push(msg);
-                }
-            });
+            if (data.messages) {
+                const now = Date.now();
+                const cutoff = now - MESSAGE_RETENTION_TIME;
+                data.messages.forEach(msg => {
+                    if (msg.timestamp > cutoff) {
+                        messages.push(msg);
+                    }
+                });
+            }
             
             // Восстанавливаем баны
-            data.bannedUsers.forEach(userId => bannedUsers.add(userId));
-            data.bannedNicknames.forEach(nickname => bannedNicknames.add(nickname));
-            data.bannedIPs.forEach(ip => bannedIPs.add(ip));
+            if (data.bannedUsers) {
+                data.bannedUsers.forEach(userId => bannedUsers.add(userId));
+            }
+            if (data.bannedNicknames) {
+                data.bannedNicknames.forEach(nickname => bannedNicknames.add(nickname));
+            }
+            if (data.bannedIPs) {
+                data.bannedIPs.forEach(ip => bannedIPs.add(ip));
+            }
             
             // Восстанавливаем админа
             if (data.adminId) {
@@ -116,8 +179,13 @@ function loadData() {
     }
 }
 
-// Загружаем данные при старте
-loadData();
+// Инициализация при старте
+async function initializeServer() {
+    await connectDB();
+    await loadData();
+}
+
+initializeServer();
 
 // Автосохранение каждые 5 минут
 setInterval(() => {
