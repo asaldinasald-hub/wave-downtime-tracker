@@ -471,5 +471,27 @@ async function init() {
     }, 2 * 60 * 1000);
 }
 
+// Nya sound functionality
+let nyaAudio = null;
+let isNyaPlaying = false;
+
+function toggleNyaSound() {
+    if (!nyaAudio) {
+        nyaAudio = new Audio('nya.mp3');
+        nyaAudio.addEventListener('ended', () => {
+            isNyaPlaying = false;
+        });
+    }
+    
+    if (isNyaPlaying) {
+        nyaAudio.pause();
+        nyaAudio.currentTime = 0;
+        isNyaPlaying = false;
+    } else {
+        nyaAudio.play();
+        isNyaPlaying = true;
+    }
+}
+
 // Start the application
 init();

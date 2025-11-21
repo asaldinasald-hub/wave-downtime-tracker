@@ -91,19 +91,29 @@ body {
     width: 60px;
     height: auto;
     z-index: 10;
-    pointer-events: none;
+    pointer-events: auto;
+    cursor: pointer;
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    transition: transform 0.2s ease;
+}
+
+.wavetyan-sitting:hover {
+    transform: scale(1.05);
+}
+
+.wavetyan-sitting:active {
+    transform: scale(0.95);
 }
 
 .decorative-cloud {
     position: absolute;
-    top: -8px;
+    top: -2px;
     right: 5px;
     width: 50px;
     height: 20px;
     background: rgba(147, 197, 253, 0.4);
     border-radius: 50px;
-    z-index: 11;
+    z-index: 12;
     pointer-events: none;
     animation: cloudFloat 3s ease-in-out infinite;
 }
