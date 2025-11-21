@@ -6,8 +6,8 @@
 
 .site-branding {
     position: fixed;
-    top: 20px;
-    left: 20px;
+    bottom: 20px;
+    right: 20px;
     font-size: 16px;
     font-weight: 500;
     color: white;
