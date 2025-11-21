@@ -102,6 +102,11 @@ function loadSavedNickname() {
     const savedAvatarHue = localStorage.getItem('chatAvatarHue');
     
     if (savedNickname && savedUserId && savedAvatarHue) {
+        // Сразу скрываем форму ввода никнейма
+        document.getElementById('nicknameSetup').classList.add('hidden');
+        document.getElementById('chatWelcome').classList.remove('hidden');
+        document.getElementById('welcomeNickname').textContent = savedNickname;
+        
         // Автоматически входим с сохраненными данными
         socket.emit('rejoin', {
             id: savedUserId,
