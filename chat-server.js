@@ -319,11 +319,22 @@ io.on('connection', (socket) => {
         bannedUsers.add(targetUserId);
         bannedNicknames.add(targetUser.nickname.toLowerCase()); // Блокируем никнейм навсегда
         
-        // Блокируем IP адрес навсегда
+        // Блокируем IP адрес навсегда (кроме IP админа mefisto)
         if (targetUser.ip) {
-            bannedIPs.add(targetUser.ip);
-            ipToUser.delete(targetUser.ip); // Удаляем сохраненные данные
-            console.log(`Banned IP: ${targetUser.ip} (user: ${targetUser.nickname})`);
+            // Находим IP админа
+            let adminIP = null;
+            if (adminId && registeredUsers.has(adminId)) {
+                adminIP = registeredUsers.get(adminId).ip;
+            }
+            
+            // Не баним IP админа
+            if (targetUser.ip !== adminIP) {
+                bannedIPs.add(targetUser.ip);
+                ipToUser.delete(targetUser.ip); // Удаляем сохраненные данные
+                console.log(`Banned IP: ${targetUser.ip} (user: ${targetUser.nickname})`);
+            } else {
+                console.log(`Skipped banning admin IP: ${targetUser.ip}`);
+            }
         }
         
         // Remove all their messages

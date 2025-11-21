@@ -296,13 +296,14 @@ document.getElementById('nicknameInput').addEventListener('keypress', (e) => {
 document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);
 
 document.getElementById('messageInput').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && !messageCooldown) {
+    if (e.key === 'Enter' && (!messageCooldown || isAdmin)) {
         sendMessage();
     }
 });
 
 function sendMessage() {
-    if (messageCooldown) {
+    // Админ не имеет cooldown
+    if (messageCooldown && !isAdmin) {
         return;
     }
     
@@ -316,8 +317,10 @@ function sendMessage() {
     socket.emit('message', message);
     messageInput.value = '';
     
-    // Start cooldown
-    startCooldown();
+    // Start cooldown только для обычных пользователей
+    if (!isAdmin) {
+        startCooldown();
+    }
 }
 
 function startCooldown() {
