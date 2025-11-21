@@ -318,7 +318,7 @@ async function updateUI(data) {
         
         // Обновляем UI согласно закешированному состоянию
         if (currentState.isDown) {
-            statusTextElement.textContent = 'WAVE IS DOWN!';
+            statusTextElement.innerHTML = 'WAVE IS DOWN! <img src="warningemoji.webp" alt="Warning" class="status-emoji">';
             statusTextElement.className = 'status-text status-down';
             timerSectionElement.classList.remove('hidden');
             timerLabelElement.textContent = 'Down for';
@@ -328,7 +328,7 @@ async function updateUI(data) {
                 updateTimer();
             }
         } else {
-            statusTextElement.textContent = 'WAVE IS UP!';
+            statusTextElement.innerHTML = 'WAVE IS UP! <img src="happyemoji.webp" alt="Happy" class="status-emoji">';
             statusTextElement.className = 'status-text status-up';
             
             if (currentState.lastDowntimeDuration > 0) {
@@ -425,13 +425,13 @@ async function updateUI(data) {
     
     // Update UI based on status
     if (isCurrentlyDown) {
-        statusTextElement.textContent = 'WAVE IS DOWN!';
+        statusTextElement.innerHTML = 'WAVE IS DOWN! <img src="warningemoji.webp" alt="Warning" class="status-emoji">';
         statusTextElement.className = 'status-text status-down';
         timerSectionElement.classList.remove('hidden');
         timerLabelElement.textContent = 'Down for';
         updateTimer();
     } else {
-        statusTextElement.textContent = 'WAVE IS UP!';
+        statusTextElement.innerHTML = 'WAVE IS UP! <img src="happyemoji.webp" alt="Happy" class="status-emoji">';
         statusTextElement.className = 'status-text status-up';
         
         if (currentState.lastDowntimeDuration > 0) {

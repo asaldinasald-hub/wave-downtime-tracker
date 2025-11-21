@@ -58,6 +58,16 @@ body {
     font-style: italic;
     line-height: 1.2;
     text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.wave-title-logo {
+    height: 48px;
+    width: auto;
+    vertical-align: middle;
 }
 
 .status-card {
@@ -104,6 +114,16 @@ body {
     padding: 24px;
     border-radius: 12px;
     transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.status-emoji {
+    height: 42px;
+    width: auto;
+    vertical-align: middle;
 }
 
 .status-up {
