@@ -8,6 +8,9 @@ env/
 venv/
 ENV/
 
+# Node.js
+node_modules/
+
 # IDEs
 .vscode/
 .idea/
@@ -21,3 +24,6 @@ Thumbs.db
 # Local development
 *.log
 .env
+
+# Chat data (persistent storage)
+chat-data.json

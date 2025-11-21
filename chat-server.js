@@ -3,6 +3,8 @@ const http = require('http');
 const socketIo = require('socket.io');
 const cors = require('cors');
 const { v4: uuidv4 } = require('uuid');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
@@ -15,6 +17,9 @@ const io = socketIo(server, {
 
 app.use(cors());
 app.use(express.json());
+
+// Путь к файлу для сохранения данных
+const DATA_FILE = path.join(__dirname, 'chat-data.json');
 
 // In-memory storage (for production, use a database like MongoDB or PostgreSQL)
 const users = new Map(); // userId -> { id, nickname, socketId, avatarHue, joinedAt, isAdmin, ip }
@@ -45,6 +50,78 @@ function getClientIP(socket) {
     return socket.handshake.address;
 }
 
+// Функции для сохранения и загрузки данных
+function saveData() {
+    try {
+        const data = {
+            registeredUsers: Array.from(registeredUsers.entries()),
+            ipToUser: Array.from(ipToUser.entries()),
+            messages: messages.slice(-1000), // Сохраняем последние 1000 сообщений
+            bannedUsers: Array.from(bannedUsers),
+            bannedNicknames: Array.from(bannedNicknames),
+            bannedIPs: Array.from(bannedIPs),
+            adminId: adminId,
+            timestamp: Date.now()
+        };
+        
+        fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+        console.log('Data saved to file');
+    } catch (error) {
+        console.error('Error saving data:', error);
+    }
+}
+
+function loadData() {
+    try {
+        if (fs.existsSync(DATA_FILE)) {
+            const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+            
+            // Восстанавливаем зарегистрированных пользователей
+            data.registeredUsers.forEach(([userId, user]) => {
+                registeredUsers.set(userId, user);
+            });
+            
+            // Восстанавливаем IP -> User mapping
+            data.ipToUser.forEach(([ip, userData]) => {
+                ipToUser.set(ip, userData);
+            });
+            
+            // Восстанавливаем сообщения (только за последние 24 часа)
+            const now = Date.now();
+            const cutoff = now - MESSAGE_RETENTION_TIME;
+            data.messages.forEach(msg => {
+                if (msg.timestamp > cutoff) {
+                    messages.push(msg);
+                }
+            });
+            
+            // Восстанавливаем баны
+            data.bannedUsers.forEach(userId => bannedUsers.add(userId));
+            data.bannedNicknames.forEach(nickname => bannedNicknames.add(nickname));
+            data.bannedIPs.forEach(ip => bannedIPs.add(ip));
+            
+            // Восстанавливаем админа
+            if (data.adminId) {
+                adminId = data.adminId;
+            }
+            
+            console.log(`Data loaded: ${registeredUsers.size} users, ${messages.length} messages, ${bannedIPs.size} banned IPs`);
+        } else {
+            console.log('No saved data found, starting fresh');
+        }
+    } catch (error) {
+        console.error('Error loading data:', error);
+    }
+}
+
+// Загружаем данные при старте
+loadData();
+
+// Автосохранение каждые 5 минут
+setInterval(() => {
+    saveData();
+}, 5 * 60 * 1000);
+
 // Clean old messages periodically
 setInterval(() => {
     const now = Date.now();
@@ -58,6 +135,7 @@ setInterval(() => {
     
     if (removedCount > 0) {
         console.log(`Cleaned ${removedCount} old messages`);
+        saveData(); // Сохраняем после очистки
     }
 }, 60000); // Check every minute
 
@@ -176,6 +254,9 @@ io.on('connection', (socket) => {
             avatarHue: user.avatarHue
         });
         console.log('Saved IP data:', clientIP, '-> nickname:', user.nickname, 'hue:', user.avatarHue);
+        
+        // Сохраняем данные в файл
+        saveData();
         
         // Send acceptance and user data
         socket.emit('nicknameAccepted', {
@@ -318,6 +399,11 @@ io.on('connection', (socket) => {
         
         messages.push(message);
         
+        // Сохраняем данные после нового сообщения (каждые 10 сообщений)
+        if (messages.length % 10 === 0) {
+            saveData();
+        }
+        
         // Broadcast message to all users
         io.emit('message', message);
         
@@ -390,6 +476,9 @@ io.on('connection', (socket) => {
         // Remove from active users and registered users
         users.delete(targetUserId);
         registeredUsers.delete(targetUserId);
+        
+        // Сохраняем данные после бана
+        saveData();
         
         io.emit('userLeft', {
             nickname: targetUser.nickname,
@@ -487,6 +576,7 @@ app.post('/admin/unban-ip', express.json(), (req, res) => {
     
     if (bannedIPs.has(ip)) {
         bannedIPs.delete(ip);
+        saveData(); // Сохраняем после разбана
         console.log('IP unbanned:', ip);
         res.json({ success: true, message: `IP ${ip} unbanned` });
     } else {
@@ -499,4 +589,17 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     console.log(`Chat server running on port ${PORT}`);
     console.log(`Admin will be the first user with nickname 'mefisto'`);
+    
+    // Сохраняем данные при остановке сервера
+    process.on('SIGINT', () => {
+        console.log('Saving data before shutdown...');
+        saveData();
+        process.exit(0);
+    });
+    
+    process.on('SIGTERM', () => {
+        console.log('Saving data before shutdown...');
+        saveData();
+        process.exit(0);
+    });
 });
