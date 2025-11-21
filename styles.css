@@ -664,6 +664,127 @@ body {
     display: none;
 }
 
+/* FAQ Section */
+.faq-section {
+    background: rgba(53, 81, 104, 0.3);
+    border: 1px solid rgba(147, 197, 253, 0.2);
+    border-radius: 16px;
+    padding: 32px;
+    margin-top: 32px;
+    backdrop-filter: blur(10px);
+}
+
+.faq-section h2 {
+    font-size: 28px;
+    color: rgb(147, 197, 253);
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.faq-item {
+    background: rgba(15, 23, 30, 0.4);
+    border: 1px solid rgba(147, 197, 253, 0.15);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.faq-item:hover {
+    border-color: rgba(147, 197, 253, 0.3);
+}
+
+.faq-question {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s;
+}
+
+.faq-question:hover {
+    background: rgba(147, 197, 253, 0.05);
+}
+
+.faq-question span {
+    flex: 1;
+    font-size: 16px;
+    font-weight: 500;
+    color: rgb(191, 219, 254);
+    padding-right: 16px;
+}
+
+.faq-icon {
+    flex-shrink: 0;
+    color: rgb(147, 197, 253);
+    transition: transform 0.3s ease;
+}
+
+.faq-item.active .faq-icon {
+    transform: rotate(180deg);
+}
+
+.faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+    padding: 0 20px;
+}
+
+.faq-item.active .faq-answer {
+    max-height: 500px;
+    padding: 0 20px 16px 20px;
+}
+
+.faq-answer p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+}
+
+.faq-footer {
+    text-align: center;
+    padding-top: 24px;
+    border-top: 1px solid rgba(147, 197, 253, 0.2);
+}
+
+.faq-footer p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+}
+
+.discord-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: rgb(147, 197, 253);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.discord-link:hover {
+    color: rgb(191, 219, 254);
+    transform: translateY(-1px);
+}
+
+.discord-icon {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
     .header h1 {
@@ -684,5 +805,17 @@ body {
     
     .stat-value {
         font-size: 28px;
+    }
+    
+    .faq-section {
+        padding: 24px 16px;
+    }
+    
+    .faq-question span {
+        font-size: 14px;
+    }
+    
+    .faq-answer p {
+        font-size: 13px;
     }
 }
