@@ -20,12 +20,12 @@ app.use(cors());
 app.use(express.json());
 
 // MongoDB connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://wavechat:ANHIFKU6K27QlzhE@cluster0.icmtcjp.mongodb.net/?appName=Cluster0';
 const DB_NAME = 'wave-chat';
 let db = null;
 let mongoClient = null;
 
-// Путь к файлу для сохранения данных (резервный вариант)
+// Путь к файлу для сохранения данных (только для локальной разработки)
 const DATA_FILE = path.join(__dirname, 'chat-data.json');
 
 // In-memory storage (for production, use a database like MongoDB or PostgreSQL)
@@ -60,19 +60,18 @@ function getClientIP(socket) {
 // Подключение к MongoDB
 async function connectDB() {
     try {
-        if (MONGODB_URI.includes('mongodb://localhost') || !MONGODB_URI.includes('mongodb')) {
-            console.log('MongoDB not configured, using file storage only');
-            return false;
-        }
-        
         mongoClient = new MongoClient(MONGODB_URI);
         await mongoClient.connect();
         db = mongoClient.db(DB_NAME);
-        console.log('Connected to MongoDB successfully');
+        
+        // Проверяем подключение
+        await db.command({ ping: 1 });
+        console.log('✅ Connected to MongoDB Atlas successfully!');
+        console.log(`📦 Database: ${DB_NAME}`);
         return true;
     } catch (error) {
-        console.error('MongoDB connection error:', error.message);
-        console.log('Falling back to file storage');
+        console.error('❌ MongoDB connection error:', error.message);
+        console.log('⚠️  Server will continue without persistent storage');
         return false;
     }
 }
@@ -91,18 +90,16 @@ async function saveData() {
             timestamp: Date.now()
         };
         
-        // Сохраняем в MongoDB если подключено
+        // Сохраняем в MongoDB
         if (db) {
             await db.collection('chatData').updateOne(
                 { _id: 'main' },
                 { $set: data },
                 { upsert: true }
             );
-            console.log('Data saved to MongoDB');
+            console.log('💾 Data saved to MongoDB Atlas');
         } else {
-            // Fallback: файл (не работает на Render при деплое)
-            fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
-            console.log('Data saved to file (WARNING: Render ephemeral storage)');
+            console.warn('⚠️  MongoDB not connected - data will not persist');
         }
     } catch (error) {
         console.error('Error saving data:', error);
@@ -113,19 +110,17 @@ async function loadData() {
     try {
         let data = null;
         
-        // Пытаемся загрузить из MongoDB
+        // Загружаем из MongoDB
         if (db) {
             const result = await db.collection('chatData').findOne({ _id: 'main' });
             if (result) {
                 data = result;
-                console.log('Data loaded from MongoDB');
+                console.log('📥 Data loaded from MongoDB Atlas');
+            } else {
+                console.log('📭 No existing data in MongoDB - starting fresh');
             }
-        }
-        
-        // Fallback: загружаем из файла
-        if (!data && fs.existsSync(DATA_FILE)) {
-            data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-            console.log('Data loaded from file');
+        } else {
+            console.warn('⚠️  MongoDB not connected - no data to load');
         }
         
         if (data) {
@@ -170,9 +165,7 @@ async function loadData() {
                 adminId = data.adminId;
             }
             
-            console.log(`Data loaded: ${registeredUsers.size} users, ${messages.length} messages, ${bannedIPs.size} banned IPs`);
-        } else {
-            console.log('No saved data found, starting fresh');
+            console.log(`📊 Stats: ${registeredUsers.size} users, ${messages.length} messages, ${bannedIPs.size} banned IPs`);
         }
     } catch (error) {
         console.error('Error loading data:', error);
