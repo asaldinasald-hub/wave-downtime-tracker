@@ -199,6 +199,13 @@ io.on('connection', (socket) => {
             return;
         }
         
+        // Проверяем, есть ли уже зарегистрированный пользователь с этого IP
+        if (ipToUser.has(clientIP)) {
+            socket.emit('error', { message: 'You already have a registered nickname from this IP' });
+            console.log(`IP ${clientIP} tried to register another nickname: ${nickname}`);
+            return;
+        }
+        
         // Validate nickname
         const englishOnly = /^[a-zA-Z0-9_]+$/;
         
