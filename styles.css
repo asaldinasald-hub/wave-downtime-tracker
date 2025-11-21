@@ -377,13 +377,20 @@ body {
 .chat-nickname-setup {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
     align-items: center;
 }
 
-.chat-nickname-setup input {
+.nickname-input-row {
+    display: flex;
+    gap: 12px;
     width: 100%;
-    max-width: 400px;
+    max-width: 500px;
+    align-items: center;
+}
+
+.nickname-input-row input {
+    flex: 1;
     padding: 12px 16px;
     background: rgba(15, 23, 30, 0.6);
     border: 2px solid rgba(147, 197, 253, 0.3);
@@ -394,12 +401,12 @@ body {
     transition: border-color 0.3s;
 }
 
-.chat-nickname-setup input:focus {
+.nickname-input-row input:focus {
     border-color: rgb(147, 197, 253);
 }
 
-.chat-nickname-setup button {
-    padding: 12px 32px;
+.nickname-input-row button {
+    padding: 12px 24px;
     background: rgb(147, 197, 253);
     color: rgb(15, 23, 30);
     border: none;
@@ -408,11 +415,25 @@ body {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
+    white-space: nowrap;
 }
 
-.chat-nickname-setup button:hover {
+.nickname-input-row button:hover {
     background: rgb(191, 219, 254);
     transform: translateY(-2px);
+}
+
+.chat-welcome {
+    text-align: center;
+    padding: 16px;
+    font-size: 18px;
+    color: rgb(147, 197, 253);
+    margin-bottom: 16px;
+}
+
+.chat-welcome strong {
+    color: rgb(191, 219, 254);
+    font-weight: 700;
 }
 
 .nickname-error {

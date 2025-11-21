@@ -67,6 +67,7 @@ function setupSocketListeners() {
         currentUser = data.user;
         isAdmin = data.isAdmin;
         saveNickname(data.user.nickname);
+        document.getElementById('welcomeNickname').textContent = data.user.nickname;
         showChatInterface();
         if (isAdmin) {
             showSystemMessage('You are now the chat administrator! You can ban users.', 'admin');
@@ -103,6 +104,7 @@ function clearNickname() {
     localStorage.removeItem('chatNickname');
     currentUser = null;
     isAdmin = false;
+    document.getElementById('welcomeNickname').textContent = '';
 }
 
 // Nickname validation
@@ -127,11 +129,13 @@ function validateNickname(nickname) {
 // UI Functions
 function showNicknameSetup() {
     document.getElementById('nicknameSetup').classList.remove('hidden');
+    document.getElementById('chatWelcome').classList.add('hidden');
     document.getElementById('chatContainer').classList.add('hidden');
 }
 
 function showChatInterface() {
     document.getElementById('nicknameSetup').classList.add('hidden');
+    document.getElementById('chatWelcome').classList.remove('hidden');
     document.getElementById('chatContainer').classList.remove('hidden');
 }
 
