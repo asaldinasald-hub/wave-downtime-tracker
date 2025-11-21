@@ -303,6 +303,20 @@ io.on('connection', (socket) => {
         
         // Handle reconnection with existing nickname
         if (userData && userData.id) {
+            // Проверяем есть ли уже активный никнейм для этого IP
+            if (ipToUser.has(clientIP)) {
+                const activeNickname = ipToUser.get(clientIP);
+                // Если пользователь пытается войти с другим никнеймом - блокируем
+                if (activeNickname.nickname !== userData.nickname) {
+                    socket.emit('error', { 
+                        message: `This IP is already using nickname: ${activeNickname.nickname}`,
+                        activeNickname: activeNickname.nickname
+                    });
+                    console.log(`IP ${clientIP} tried to use ${userData.nickname} but has ${activeNickname.nickname}`);
+                    return;
+                }
+            }
+            
             // ИСПРАВЛЕНИЕ: если пользователь не найден в registeredUsers (после редеплоя),
             // используем данные из localStorage клиента
             let registeredUser = registeredUsers.get(userData.id);
@@ -318,10 +332,13 @@ io.on('connection', (socket) => {
                     ip: clientIP
                 };
                 registeredUsers.set(userData.id, registeredUser);
+                
+                // Устанавливаем этот никнейм как активный для IP (последний зарегистрированный)
                 ipToUser.set(clientIP, {
                     nickname: registeredUser.nickname,
                     avatarHue: registeredUser.avatarHue
                 });
+                
                 saveData();
             }
             
