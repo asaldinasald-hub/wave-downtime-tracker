@@ -111,13 +111,13 @@ body {
     right: 5px;
     width: 50px;
     height: 20px;
-    background: rgba(147, 197, 253, 0.9625);
+    background: rgba(147, 197, 253, 0.75);
     border-radius: 50px;
     z-index: 12;
     pointer-events: none;
     animation: cloudFloat 3s ease-in-out infinite;
-    backdrop-filter: blur(60px);
-    -webkit-backdrop-filter: blur(60px);
+    backdrop-filter: blur(60px) saturate(180%);
+    -webkit-backdrop-filter: blur(60px) saturate(180%);
 }
 
 .decorative-cloud::before {
@@ -127,8 +127,10 @@ body {
     left: 10px;
     width: 20px;
     height: 20px;
-    background: rgba(147, 197, 253, 0.9625);
+    background: rgba(147, 197, 253, 0.75);
     border-radius: 50%;
+    backdrop-filter: blur(60px) saturate(180%);
+    -webkit-backdrop-filter: blur(60px) saturate(180%);
 }
 
 .decorative-cloud::after {
@@ -138,8 +140,10 @@ body {
     right: 10px;
     width: 15px;
     height: 15px;
-    background: rgba(147, 197, 253, 0.9625);
+    background: rgba(147, 197, 253, 0.75);
     border-radius: 50%;
+    backdrop-filter: blur(60px) saturate(180%);
+    -webkit-backdrop-filter: blur(60px) saturate(180%);
 }
 
 .decorative-cloud-2 {
@@ -148,13 +152,13 @@ body {
     right: -15px;
     width: 45px;
     height: 18px;
-    background: rgba(147, 197, 253, 0.9625);
+    background: rgba(147, 197, 253, 0.75);
     border-radius: 50px;
     z-index: 13;
     pointer-events: none;
     animation: cloudFloat 3s ease-in-out infinite 0.5s;
-    backdrop-filter: blur(60px);
-    -webkit-backdrop-filter: blur(60px);
+    backdrop-filter: blur(60px) saturate(180%);
+    -webkit-backdrop-filter: blur(60px) saturate(180%);
 }
 
 .decorative-cloud-2::before {
@@ -164,8 +168,10 @@ body {
     left: 8px;
     width: 18px;
     height: 18px;
-    background: rgba(147, 197, 253, 0.9625);
+    background: rgba(147, 197, 253, 0.75);
     border-radius: 50%;
+    backdrop-filter: blur(60px) saturate(180%);
+    -webkit-backdrop-filter: blur(60px) saturate(180%);
 }
 
 .decorative-cloud-2::after {
@@ -175,8 +181,10 @@ body {
     right: 8px;
     width: 13px;
     height: 13px;
-    background: rgba(147, 197, 253, 0.9625);
+    background: rgba(147, 197, 253, 0.75);
     border-radius: 50%;
+    backdrop-filter: blur(60px) saturate(180%);
+    -webkit-backdrop-filter: blur(60px) saturate(180%);
 }
 
 @keyframes cloudFloat {
