@@ -43,12 +43,12 @@ function setupSocketListeners() {
     });
     
     socket.on('userJoined', (data) => {
-        showSystemMessage(`${data.nickname} joined the chat`);
+        showSystemMessage(`${data.nickname} joined the chat`, 'join');
         updateOnlineCount(data.onlineCount);
     });
     
     socket.on('userLeft', (data) => {
-        showSystemMessage(`${data.nickname} left the chat`);
+        showSystemMessage(`${data.nickname} left the chat`, 'leave');
         updateOnlineCount(data.onlineCount);
     });
     
@@ -208,6 +208,11 @@ function displayMessage(data) {
     
     if (data.type === 'system') {
         messageDiv.classList.add('system-message');
+        if (data.subType === 'join') {
+            messageDiv.classList.add('system-join');
+        } else if (data.subType === 'leave') {
+            messageDiv.classList.add('system-leave');
+        }
         messageDiv.innerHTML = `<span class="system-text">${escapeHtml(data.message)}</span>`;
         
         // Удаляем системное сообщение через 3 секунды
@@ -257,6 +262,7 @@ function showSystemMessage(message, type = 'info') {
     displayMessage({
         id: Date.now(),
         type: 'system',
+        subType: type,
         message: message,
         timestamp: Date.now()
     });
