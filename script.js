@@ -8,10 +8,12 @@ const STORAGE_KEY = 'waveDowntimeData';
 let currentState = {
     isDown: false,
     version: null,
+    lastKnownVersion: null,
     downSince: null,
     apiDownSince: null,
     lastDowntimeDuration: 0,
-    longestDowntime: 0
+    longestDowntime: 0,
+    apiAvailable: true
 };
 
 // Load saved data from localStorage
@@ -26,6 +28,9 @@ function loadSavedData() {
             if (data.longestDowntime) {
                 currentState.longestDowntime = data.longestDowntime;
             }
+            if (data.lastKnownVersion) {
+                currentState.lastKnownVersion = data.lastKnownVersion;
+            }
             updateStatsDisplay();
         }
     } catch (e) {
@@ -38,7 +43,8 @@ function saveData() {
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({
             lastDowntimeDuration: currentState.lastDowntimeDuration,
-            longestDowntime: currentState.longestDowntime
+            longestDowntime: currentState.longestDowntime,
+            lastKnownVersion: currentState.lastKnownVersion
         }));
     } catch (e) {
         console.error('Error saving data:', e);
@@ -171,15 +177,48 @@ async function updateUI(data) {
     const timerLabelElement = document.getElementById('timerLabel');
     
     if (!data) {
-        statusTextElement.textContent = 'Unable to fetch status';
-        versionElement.textContent = 'Error';
+        // API недоступно
+        currentState.apiAvailable = false;
+        statusTextElement.textContent = 'WEAO API IS DOWN!';
+        statusTextElement.className = 'status-text status-down';
+        
+        // Показываем последнюю известную версию
+        if (currentState.lastKnownVersion) {
+            versionElement.textContent = currentState.lastKnownVersion;
+        } else {
+            versionElement.textContent = 'Unknown';
+        }
         return;
     }
     
+    currentState.apiAvailable = true;
     console.log('Wave data:', data);
     
-    // Update version
-    versionElement.textContent = data.version || 'Unknown';
+    // Сохраняем текущую версию как последнюю известную
+    if (data.version) {
+        const wasUpdated = currentState.lastKnownVersion && currentState.lastKnownVersion !== data.version;
+        currentState.lastKnownVersion = data.version;
+        versionElement.textContent = data.version;
+        
+        // Если версия изменилась (обновилась)
+        if (wasUpdated && currentState.isDown) {
+            // Wave обновился! Сохраняем результаты
+            const finalDowntime = currentState.apiDownSince ? Date.now() - currentState.apiDownSince : 0;
+            
+            // Сохраняем как последний downtime
+            currentState.lastDowntimeDuration = finalDowntime;
+            
+            // Обновляем рекорд если текущий downtime больше
+            if (finalDowntime > currentState.longestDowntime) {
+                currentState.longestDowntime = finalDowntime;
+            }
+            
+            console.log('Version updated! Saved downtime:', formatDuration(finalDowntime));
+            saveData();
+        }
+    } else {
+        versionElement.textContent = currentState.lastKnownVersion || 'Unknown';
+    }
     
     // Check if Wave is down (updateStatus: false means it's down)
     const isCurrentlyDown = data.updateStatus === false;
@@ -203,20 +242,10 @@ async function updateUI(data) {
         currentState.downSince = Date.now();
         currentState.version = data.version;
     } else if (!isCurrentlyDown && currentState.isDown) {
-        // Wave just came back up
-        const downDuration = currentState.apiDownSince ? Date.now() - currentState.apiDownSince : 0;
-        currentState.lastDowntimeDuration = downDuration;
-        
-        // Update record if this was longer
-        if (downDuration > currentState.longestDowntime) {
-            currentState.longestDowntime = downDuration;
-        }
-        
+        // Wave came back up (но результаты уже сохранены при смене версии)
         currentState.isDown = false;
         currentState.downSince = null;
         currentState.apiDownSince = null;
-        
-        saveData();
         updateStatsDisplay();
     }
     
