@@ -61,11 +61,39 @@
             </a>
         </div>
         
+        <!-- Chat Section -->
+        <div class="chat-section">
+            <div class="chat-header">
+                <h2>Community Chat</h2>
+                <div class="online-counter">
+                    <div class="online-pulse"></div>
+                    <span id="onlineCount">0</span> online
+                </div>
+            </div>
+            
+            <div class="chat-nickname-setup" id="nicknameSetup">
+                <input type="text" id="nicknameInput" placeholder="Enter your nickname (English only)" maxlength="20">
+                <button id="setNicknameBtn">Join Chat</button>
+                <div class="nickname-error" id="nicknameError"></div>
+            </div>
+            
+            <div class="chat-container hidden" id="chatContainer">
+                <div class="chat-messages" id="chatMessages"></div>
+                <div class="chat-input-container">
+                    <input type="text" id="messageInput" placeholder="Type a message..." maxlength="100">
+                    <button id="sendMessageBtn">Send</button>
+                    <div class="message-cooldown" id="messageCooldown"></div>
+                </div>
+            </div>
+        </div>
+        
         <div class="footer">
             <p>Data from WEAO API • Auto-refreshes every 30 seconds</p>
         </div>
     </div>
     
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="script.js"></script>
+    <script src="chat.js"></script>
 </body>
 </html>
