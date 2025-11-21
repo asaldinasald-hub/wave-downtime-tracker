@@ -8,6 +8,7 @@ let currentState = {
     isDown: false,
     version: null,
     downSince: null,
+    apiDownSince: null,
     lastDowntimeDuration: 0,
     longestDowntime: 0
 };
@@ -60,6 +61,18 @@ async function fetchWaveStatus() {
     }
 }
 
+// Parse API date to timestamp
+function parseApiDate(dateString) {
+    // Format: "11/19/2025, 9:06:21 PM UTC"
+    try {
+        const cleanDate = dateString.replace(' UTC', '').replace(',', '');
+        return new Date(cleanDate + ' UTC').getTime();
+    } catch (e) {
+        console.error('Error parsing date:', e);
+        return null;
+    }
+}
+
 // Format time duration
 function formatDuration(milliseconds) {
     const seconds = Math.floor(milliseconds / 1000);
@@ -92,9 +105,15 @@ function formatTimer(milliseconds) {
 function updateTimer() {
     const timerElement = document.getElementById('timer');
     
-    if (currentState.isDown && currentState.downSince) {
-        const elapsed = Date.now() - currentState.downSince;
+    if (currentState.isDown && currentState.apiDownSince) {
+        const elapsed = Date.now() - currentState.apiDownSince;
         timerElement.textContent = formatTimer(elapsed);
+        
+        // Обновляем longest если текущий downtime больше
+        if (elapsed > currentState.longestDowntime) {
+            currentState.longestDowntime = elapsed;
+            updateStatsDisplay();
+        }
     }
 }
 
@@ -140,6 +159,14 @@ function updateUI(data) {
     
     console.log('Update Status:', data.updateStatus, 'Is Down:', isCurrentlyDown);
     
+    // Parse API updated date
+    if (data.updatedDate) {
+        const apiTimestamp = parseApiDate(data.updatedDate);
+        if (apiTimestamp) {
+            currentState.apiDownSince = apiTimestamp;
+        }
+    }
+    
     // Handle state changes
     if (isCurrentlyDown && !currentState.isDown) {
         // Wave just went down
@@ -148,7 +175,7 @@ function updateUI(data) {
         currentState.version = data.version;
     } else if (!isCurrentlyDown && currentState.isDown) {
         // Wave just came back up
-        const downDuration = Date.now() - currentState.downSince;
+        const downDuration = currentState.apiDownSince ? Date.now() - currentState.apiDownSince : 0;
         currentState.lastDowntimeDuration = downDuration;
         
         // Update record if this was longer
@@ -158,6 +185,7 @@ function updateUI(data) {
         
         currentState.isDown = false;
         currentState.downSince = null;
+        currentState.apiDownSince = null;
         
         saveData();
         updateStatsDisplay();
