@@ -130,8 +130,10 @@ function updateTimer() {
         // Обновляем longest если текущий downtime больше
         if (elapsed > currentState.longestDowntime) {
             currentState.longestDowntime = elapsed;
-            updateStatsDisplay();
         }
+        
+        // Обновляем статистику (включая Last Downtime если нет истории)
+        updateStatsDisplay();
     }
 }
 
@@ -140,9 +142,16 @@ function updateStatsDisplay() {
     const lastDowntimeElement = document.getElementById('lastDowntime');
     const recordElement = document.getElementById('record');
     
+    // Если есть сохранённый последний downtime - показываем его
     if (currentState.lastDowntimeDuration > 0) {
         lastDowntimeElement.textContent = formatDuration(currentState.lastDowntimeDuration);
-    } else {
+    } 
+    // Если нет истории, но Wave сейчас DOWN - копируем текущий таймер
+    else if (currentState.isDown && currentState.apiDownSince) {
+        const currentDowntime = Date.now() - currentState.apiDownSince;
+        lastDowntimeElement.textContent = formatDuration(currentDowntime);
+    } 
+    else {
         lastDowntimeElement.textContent = 'No data yet';
     }
     
