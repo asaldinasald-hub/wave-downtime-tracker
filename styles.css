@@ -107,11 +107,11 @@ body {
 
 .decorative-cloud {
     position: absolute;
-    top: 5px;
+    top: 12px;
     right: 5px;
     width: 50px;
     height: 20px;
-    background: rgba(147, 197, 253, 0.7);
+    background: rgba(147, 197, 253, 0.85);
     border-radius: 50px;
     z-index: 12;
     pointer-events: none;
@@ -125,7 +125,7 @@ body {
     left: 10px;
     width: 20px;
     height: 20px;
-    background: rgba(147, 197, 253, 0.7);
+    background: rgba(147, 197, 253, 0.85);
     border-radius: 50%;
 }
 
@@ -136,7 +136,7 @@ body {
     right: 10px;
     width: 15px;
     height: 15px;
-    background: rgba(147, 197, 253, 0.7);
+    background: rgba(147, 197, 253, 0.85);
     border-radius: 50%;
 }
 
@@ -149,6 +149,25 @@ body {
         transform: translateY(-3px);
         opacity: 0.8;
     }
+}
+
+@keyframes nyaBounce {
+    0%, 100% {
+        transform: translateY(0px) scale(1);
+    }
+    25% {
+        transform: translateY(-8px) scale(1.05);
+    }
+    50% {
+        transform: translateY(0px) scale(1);
+    }
+    75% {
+        transform: translateY(-4px) scale(1.02);
+    }
+}
+
+.wavetyan-sitting.bouncing {
+    animation: nyaBounce 0.6s ease-in-out infinite;
 }
 
 .version-info {

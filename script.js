@@ -476,10 +476,15 @@ let nyaAudio = null;
 let isNyaPlaying = false;
 
 function toggleNyaSound() {
+    const wavetyanImg = document.querySelector('.wavetyan-sitting');
+    
     if (!nyaAudio) {
         nyaAudio = new Audio('nya.mp3');
         nyaAudio.addEventListener('ended', () => {
             isNyaPlaying = false;
+            if (wavetyanImg) {
+                wavetyanImg.classList.remove('bouncing');
+            }
         });
     }
     
@@ -487,9 +492,15 @@ function toggleNyaSound() {
         nyaAudio.pause();
         nyaAudio.currentTime = 0;
         isNyaPlaying = false;
+        if (wavetyanImg) {
+            wavetyanImg.classList.remove('bouncing');
+        }
     } else {
         nyaAudio.play();
         isNyaPlaying = true;
+        if (wavetyanImg) {
+            wavetyanImg.classList.add('bouncing');
+        }
     }
 }
 
