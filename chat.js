@@ -6,10 +6,18 @@ let messageCooldown = false;
 
 // Connect to chat server
 function initializeChat() {
-    // For local development
-    const serverUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        ? 'http://localhost:3000'
-        : 'https://your-backend-url.com'; // Replace with your actual backend URL
+    // Automatic server detection
+    let serverUrl;
+    
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        // Local development
+        serverUrl = 'http://localhost:3000';
+    } else {
+        // Production - update this URL after deploying to Render
+        serverUrl = 'https://wave-chat-server.onrender.com'; // Update this after deployment!
+    }
+    
+    console.log('Connecting to chat server:', serverUrl);
     
     socket = io(serverUrl, {
         transports: ['websocket', 'polling'],
