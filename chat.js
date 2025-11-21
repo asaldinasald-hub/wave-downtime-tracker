@@ -228,13 +228,19 @@ function displayMessage(data) {
             messageDiv.classList.add('own-message');
         }
         
+        const isMefisto = data.nickname.toLowerCase() === 'mefisto';
         const avatarStyle = `filter: hue-rotate(${data.avatarHue}deg) saturate(1.5);`;
         
+        // Для Mefisto используем видео аватар
+        const avatarHTML = isMefisto 
+            ? `<video src="mefistoavatar.mp4" class="chat-avatar-video" autoplay loop muted playsinline></video>`
+            : `<img src="userschaticons.png" class="chat-avatar" style="${avatarStyle}" alt="${escapeHtml(data.nickname)}">`;
+        
         messageDiv.innerHTML = `
-            <img src="userschaticons.png" class="chat-avatar" style="${avatarStyle}" alt="${escapeHtml(data.nickname)}">
+            ${avatarHTML}
             <div class="message-content">
                 <div class="message-header">
-                    <span class="message-nickname">${escapeHtml(data.nickname)}</span>
+                    <span class="message-nickname">${escapeHtml(data.nickname)}${isMefisto ? '<span class="admin-crown">👑</span>' : ''}</span>
                     <span class="message-time">${formatTime(data.timestamp)}</span>
                     ${isAdmin && !isOwnMessage ? `<button class="ban-button" onclick="banUser('${data.userId}', '${escapeHtml(data.nickname)}')">Ban</button>` : ''}
                 </div>

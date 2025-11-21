@@ -512,6 +512,14 @@ body {
     flex-shrink: 0;
 }
 
+.chat-avatar-video {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    object-fit: cover;
+}
+
 .message-content {
     flex: 1;
     min-width: 0;
@@ -527,6 +535,25 @@ body {
 .message-nickname {
     font-weight: 600;
     color: rgb(147, 197, 253);
+}
+
+.admin-crown {
+    display: inline-block;
+    font-size: 16px;
+    margin-left: 4px;
+    filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.6));
+    animation: crownGlow 2s ease-in-out infinite;
+}
+
+@keyframes crownGlow {
+    0%, 100% {
+        filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.6));
+        transform: scale(1);
+    }
+    50% {
+        filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.9));
+        transform: scale(1.05);
+    }
 }
 
 .message-time {
