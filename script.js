@@ -176,13 +176,19 @@ async function updateUI(data) {
     const timerSectionElement = document.getElementById('timerSection');
     const timerLabelElement = document.getElementById('timerLabel');
     
+    const apiStatusSection = document.getElementById('apiStatusSection');
+    const apiStatusMessage = document.getElementById('apiStatusMessage');
+    
     if (!data) {
         // API недоступно - продолжаем работать с последними данными
         currentState.apiAvailable = false;
         
-        // Показываем предупреждение но не останавливаем работу
-        statusTextElement.textContent = 'WEAO API IS DOWN! (Using cached data)';
-        statusTextElement.className = 'status-text status-down';
+        // Показываем ошибку API в отдельной секции
+        apiStatusSection.classList.remove('hidden');
+        apiStatusMessage.textContent = '⚠️ WEAO API is currently unavailable - Using cached data';
+        apiStatusMessage.className = 'api-status-message error';
+        
+        // Основной статус остаётся без изменений (только Wave статус)
         
         // Показываем последнюю известную версию
         if (currentState.lastKnownVersion) {
@@ -195,10 +201,8 @@ async function updateUI(data) {
         if (currentState.isDown && currentState.apiDownSince) {
             timerSectionElement.classList.remove('hidden');
             timerLabelElement.textContent = 'Down for';
-            // Таймер будет обновляться через setInterval
         }
         
-        // Обновляем статистику (Last и Longest продолжают расти)
         updateStatsDisplay();
         return;
     }
@@ -206,6 +210,16 @@ async function updateUI(data) {
     // API снова доступен
     if (!currentState.apiAvailable) {
         console.log('API reconnected! Syncing data...');
+        // Показываем успешное подключение на 3 секунды
+        apiStatusSection.classList.remove('hidden');
+        apiStatusMessage.textContent = '✅ API reconnected successfully';
+        apiStatusMessage.className = 'api-status-message success';
+        setTimeout(() => {
+            apiStatusSection.classList.add('hidden');
+        }, 3000);
+    } else {
+        // API работает нормально - скрываем статус
+        apiStatusSection.classList.add('hidden');
     }
     currentState.apiAvailable = true;
     console.log('Wave data:', data);
