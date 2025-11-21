@@ -87,7 +87,7 @@ body {
 .wavetyan-sitting {
     position: absolute;
     top: -55px;
-    right: -10px;
+    right: 5px;
     width: 60px;
     height: auto;
     z-index: 10;
@@ -108,7 +108,7 @@ body {
 .decorative-cloud {
     position: absolute;
     top: 20px;
-    right: 5px;
+    right: 20px;
     width: 50px;
     height: 20px;
     background: rgba(147, 197, 253, 0.75);
@@ -149,7 +149,7 @@ body {
 .decorative-cloud-2 {
     position: absolute;
     top: 22px;
-    right: -15px;
+    right: 0px;
     width: 45px;
     height: 18px;
     background: rgba(147, 197, 253, 0.75);
