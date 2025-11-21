@@ -1,6 +1,7 @@
 // Configuration
 const API_URL = '/api/wave'; // Используем локальный прокси
 const ROBLOX_API_URL = '/api/roblox'; // Roblox versions API
+const CACHE_API_URL = 'https://wave-chat-server.onrender.com/api/wave-cache'; // MongoDB cache
 const REFRESH_INTERVAL = 30000; // 30 seconds
 const STORAGE_KEY = 'waveDowntimeData';
 
@@ -16,39 +17,103 @@ let currentState = {
     apiAvailable: true
 };
 
-// Load saved data from localStorage
-function loadSavedData() {
+// Load saved data from localStorage and MongoDB
+async function loadSavedData() {
     try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-            const data = JSON.parse(saved);
-            if (data.lastDowntimeDuration) {
-                currentState.lastDowntimeDuration = data.lastDowntimeDuration;
+        // Сначала пытаемся загрузить из MongoDB
+        const dbCache = await loadCacheFromDB();
+        
+        if (dbCache) {
+            // Используем данные из MongoDB
+            if (dbCache.lastDowntimeDuration) {
+                currentState.lastDowntimeDuration = dbCache.lastDowntimeDuration;
             }
-            if (data.longestDowntime) {
-                currentState.longestDowntime = data.longestDowntime;
+            if (dbCache.longestDowntime) {
+                currentState.longestDowntime = dbCache.longestDowntime;
             }
-            if (data.lastKnownVersion) {
-                currentState.lastKnownVersion = data.lastKnownVersion;
+            if (dbCache.lastKnownVersion) {
+                currentState.lastKnownVersion = dbCache.lastKnownVersion;
             }
-            updateStatsDisplay();
+            if (dbCache.isDown !== undefined) {
+                currentState.isDown = dbCache.isDown;
+            }
+            if (dbCache.apiDownSince) {
+                currentState.apiDownSince = dbCache.apiDownSince;
+            }
+            console.log('✅ Loaded data from MongoDB cache');
+        } else {
+            // Fallback на localStorage
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                const data = JSON.parse(saved);
+                if (data.lastDowntimeDuration) {
+                    currentState.lastDowntimeDuration = data.lastDowntimeDuration;
+                }
+                if (data.longestDowntime) {
+                    currentState.longestDowntime = data.longestDowntime;
+                }
+                if (data.lastKnownVersion) {
+                    currentState.lastKnownVersion = data.lastKnownVersion;
+                }
+                if (data.isDown !== undefined) {
+                    currentState.isDown = data.isDown;
+                }
+                if (data.apiDownSince) {
+                    currentState.apiDownSince = data.apiDownSince;
+                }
+                console.log('✅ Loaded data from localStorage');
+            }
         }
+        
+        updateStatsDisplay();
     } catch (e) {
         console.error('Error loading saved data:', e);
     }
 }
 
-// Save data to localStorage
-function saveData() {
+// Save data to localStorage and MongoDB
+async function saveData() {
     try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        const dataToSave = {
             lastDowntimeDuration: currentState.lastDowntimeDuration,
             longestDowntime: currentState.longestDowntime,
-            lastKnownVersion: currentState.lastKnownVersion
-        }));
+            lastKnownVersion: currentState.lastKnownVersion,
+            isDown: currentState.isDown,
+            apiDownSince: currentState.apiDownSince
+        };
+        
+        // Сохраняем в localStorage
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+        
+        // Сохраняем в MongoDB через API
+        try {
+            await fetch(CACHE_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dataToSave)
+            });
+            console.log('📦 Cache saved to MongoDB');
+        } catch (error) {
+            console.warn('Failed to save cache to MongoDB:', error);
+        }
     } catch (e) {
         console.error('Error saving data:', e);
     }
+}
+
+// Load cache from MongoDB
+async function loadCacheFromDB() {
+    try {
+        const response = await fetch(CACHE_API_URL);
+        if (response.ok) {
+            const cache = await response.json();
+            console.log('📥 Loaded cache from MongoDB:', cache);
+            return cache;
+        }
+    } catch (error) {
+        console.warn('Failed to load cache from MongoDB:', error);
+    }
+    return null;
 }
 
 // Fetch Roblox version info
@@ -180,27 +245,43 @@ async function updateUI(data) {
     const apiStatusMessage = document.getElementById('apiStatusMessage');
     
     if (!data) {
-        // API недоступно - продолжаем работать с последними данными
+        // API недоступно - используем кешированные данные из MongoDB
         currentState.apiAvailable = false;
         
         // Показываем ошибку API в отдельной секции
         apiStatusSection.classList.remove('hidden');
-        apiStatusMessage.textContent = '⚠️ WEAO API is currently unavailable - Using cached data';
+        apiStatusMessage.textContent = '⚠️ WEAO API is currently unavailable - Using cached data from database';
         apiStatusMessage.className = 'api-status-message error';
         
-        // Основной статус остаётся без изменений (только Wave статус)
-        
-        // Показываем последнюю известную версию
+        // Показываем закешированное состояние
         if (currentState.lastKnownVersion) {
             versionElement.textContent = currentState.lastKnownVersion;
         } else {
             versionElement.textContent = 'Unknown';
         }
         
-        // Продолжаем показывать таймер если Wave был DOWN
-        if (currentState.isDown && currentState.apiDownSince) {
+        // Обновляем UI согласно закешированному состоянию
+        if (currentState.isDown) {
+            statusTextElement.textContent = 'WAVE IS DOWN!';
+            statusTextElement.className = 'status-text status-down';
             timerSectionElement.classList.remove('hidden');
             timerLabelElement.textContent = 'Down for';
+            
+            // Продолжаем показывать таймер
+            if (currentState.apiDownSince) {
+                updateTimer();
+            }
+        } else {
+            statusTextElement.textContent = 'WAVE IS UP!';
+            statusTextElement.className = 'status-text status-up';
+            
+            if (currentState.lastDowntimeDuration > 0) {
+                timerSectionElement.classList.remove('hidden');
+                document.getElementById('timer').textContent = formatDuration(currentState.lastDowntimeDuration);
+                timerLabelElement.textContent = 'Last downtime duration';
+            } else {
+                timerSectionElement.classList.add('hidden');
+            }
         }
         
         updateStatsDisplay();
@@ -244,7 +325,7 @@ async function updateUI(data) {
             }
             
             console.log('Version updated! Saved downtime:', formatDuration(finalDowntime));
-            saveData();
+            await saveData(); // Сохраняем в localStorage и MongoDB
         }
     } else {
         versionElement.textContent = currentState.lastKnownVersion || 'Unknown';
@@ -282,6 +363,7 @@ async function updateUI(data) {
         currentState.isDown = false;
         currentState.downSince = null;
         currentState.apiDownSince = null;
+        await saveData(); // Сохраняем новое состояние
         updateStatsDisplay();
     }
     
@@ -308,7 +390,7 @@ async function updateUI(data) {
 
 // Initialize and start monitoring
 async function init() {
-    loadSavedData();
+    await loadSavedData();
     
     // Initial fetch
     const data = await fetchWaveStatus();
@@ -326,6 +408,11 @@ async function init() {
             updateTimer();
         }
     }, 1000);
+    
+    // Периодически сохраняем состояние в кеш (каждые 2 минуты)
+    setInterval(async () => {
+        await saveData();
+    }, 2 * 60 * 1000);
 }
 
 // Start the application

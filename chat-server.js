@@ -106,6 +106,44 @@ async function saveData() {
     }
 }
 
+// Сохранение кеша Wave API данных
+async function saveWaveCache(cacheData) {
+    try {
+        if (db) {
+            await db.collection('waveCache').updateOne(
+                { _id: 'current' },
+                { 
+                    $set: {
+                        ...cacheData,
+                        lastUpdated: Date.now()
+                    }
+                },
+                { upsert: true }
+            );
+            console.log('💾 Wave cache saved to MongoDB');
+        }
+    } catch (error) {
+        console.error('Error saving Wave cache:', error);
+    }
+}
+
+// Загрузка кеша Wave API данных
+async function loadWaveCache() {
+    try {
+        if (db) {
+            const cache = await db.collection('waveCache').findOne({ _id: 'current' });
+            if (cache) {
+                console.log('📥 Wave cache loaded from MongoDB');
+                return cache;
+            }
+        }
+        return null;
+    } catch (error) {
+        console.error('Error loading Wave cache:', error);
+        return null;
+    }
+}
+
 async function loadData() {
     try {
         let data = null;
@@ -732,6 +770,32 @@ app.post('/admin/unban-ip', express.json(), (req, res) => {
         res.json({ success: true, message: `IP ${ip} unbanned` });
     } else {
         res.status(404).json({ error: 'IP not found in ban list' });
+    }
+});
+
+// Wave cache endpoints
+app.post('/api/wave-cache', express.json(), async (req, res) => {
+    try {
+        const cacheData = req.body;
+        await saveWaveCache(cacheData);
+        res.json({ success: true, message: 'Cache saved' });
+    } catch (error) {
+        console.error('Error saving cache:', error);
+        res.status(500).json({ error: 'Failed to save cache' });
+    }
+});
+
+app.get('/api/wave-cache', async (req, res) => {
+    try {
+        const cache = await loadWaveCache();
+        if (cache) {
+            res.json(cache);
+        } else {
+            res.status(404).json({ error: 'No cache available' });
+        }
+    } catch (error) {
+        console.error('Error loading cache:', error);
+        res.status(500).json({ error: 'Failed to load cache' });
     }
 });
 
