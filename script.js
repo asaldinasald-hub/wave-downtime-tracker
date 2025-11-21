@@ -5,6 +5,14 @@ const CACHE_API_URL = 'https://wave-chat-server.onrender.com/api/wave-cache'; //
 const REFRESH_INTERVAL = 30000; // 30 seconds
 const STORAGE_KEY = 'waveDowntimeData';
 
+// WEAO domains for direct fallback (if proxy fails)
+const WEAO_DOMAINS = [
+    'weao.xyz',
+    'whatexpsare.online',
+    'whatexploitsaretra.sh',
+    'weao.gg'
+];
+
 // State
 let currentState = {
     isDown: false,
@@ -116,37 +124,85 @@ async function loadCacheFromDB() {
     return null;
 }
 
+// Fetch with fallback across multiple domains
+async function fetchWithFallback(endpoint) {
+    // Рандомизируем домены для распределения нагрузки
+    const domains = [...WEAO_DOMAINS].sort(() => Math.random() - 0.5);
+    
+    for (const domain of domains) {
+        try {
+            const url = `https://${domain}${endpoint}`;
+            console.log(`Trying domain: ${domain}`);
+            
+            const response = await fetch(url, {
+                headers: { 'User-Agent': 'WEAO-3PService' }
+            });
+            
+            if (response.status === 429) {
+                console.warn(`⚠️ Rate limit on ${domain}, trying next...`);
+                continue;
+            }
+            
+            if (!response.ok) {
+                console.warn(`❌ HTTP ${response.status} on ${domain}`);
+                continue;
+            }
+            
+            const data = await response.json();
+            console.log(`✅ Success from ${domain}`);
+            return data;
+            
+        } catch (error) {
+            console.warn(`❌ Error on ${domain}:`, error);
+            continue;
+        }
+    }
+    
+    console.error('All WEAO domains failed');
+    return null;
+}
+
 // Fetch Roblox version info
 async function fetchRobloxVersion() {
     try {
+        // Сначала пытаемся через прокси
         const response = await fetch(ROBLOX_API_URL);
         
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        if (response.ok) {
+            const data = await response.json();
+            return data;
         }
         
-        const data = await response.json();
-        return data;
+        // Если прокси не работает, пробуем напрямую с fallback
+        console.warn('Proxy failed, trying direct access with fallback...');
+        return await fetchWithFallback('/api/versions/current');
+        
     } catch (error) {
-        console.error('Error fetching Roblox version:', error);
-        return null;
+        console.error('Error fetching Roblox version from proxy:', error);
+        // Fallback на прямые запросы
+        return await fetchWithFallback('/api/versions/current');
     }
 }
 
 // Fetch Wave status from API
 async function fetchWaveStatus() {
     try {
+        // Сначала пытаемся через прокси
         const response = await fetch(API_URL);
         
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        if (response.ok) {
+            const data = await response.json();
+            return data;
         }
         
-        const data = await response.json();
-        return data;
+        // Если прокси не работает, пробуем напрямую с fallback
+        console.warn('Proxy failed, trying direct access with fallback...');
+        return await fetchWithFallback('/api/status/exploits/wave');
+        
     } catch (error) {
-        console.error('Error fetching Wave status:', error);
-        return null;
+        console.error('Error fetching Wave status from proxy:', error);
+        // Fallback на прямые запросы
+        return await fetchWithFallback('/api/status/exploits/wave');
     }
 }
 
