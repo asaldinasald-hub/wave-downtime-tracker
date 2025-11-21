@@ -17,13 +17,31 @@ app.use(cors());
 app.use(express.json());
 
 // In-memory storage (for production, use a database like MongoDB or PostgreSQL)
-const users = new Map(); // userId -> { id, nickname, socketId, avatarHue, joinedAt, isAdmin }
-const registeredUsers = new Map(); // Permanent storage: userId -> { id, nickname, avatarHue, isAdmin }
+const users = new Map(); // userId -> { id, nickname, socketId, avatarHue, joinedAt, isAdmin, ip }
+const registeredUsers = new Map(); // Permanent storage: userId -> { id, nickname, avatarHue, isAdmin, ip }
 const messages = []; // Array of messages
 const bannedUsers = new Set(); // Set of banned userIds
 const bannedNicknames = new Set(); // Set of permanently banned nicknames (lowercase)
+const bannedIPs = new Set(); // Set of permanently banned IP addresses
 let adminId = null; // First user with nickname 'mefisto' becomes admin
 const MESSAGE_RETENTION_TIME = 24 * 60 * 60 * 1000; // 24 hours
+
+// Функция для получения IP адреса клиента
+function getClientIP(socket) {
+    // Проверяем заголовки для случаев когда используется прокси/CDN
+    const forwarded = socket.handshake.headers['x-forwarded-for'];
+    if (forwarded) {
+        return forwarded.split(',')[0].trim();
+    }
+    
+    const realIP = socket.handshake.headers['x-real-ip'];
+    if (realIP) {
+        return realIP;
+    }
+    
+    // Fallback на прямой IP
+    return socket.handshake.address;
+}
 
 // Clean old messages periodically
 setInterval(() => {
@@ -69,7 +87,16 @@ function isNicknameAvailable(nickname, excludeUserId = null) {
 const allConnections = new Set(); // Все активные socket соединения
 
 io.on('connection', (socket) => {
-    console.log('New connection:', socket.id);
+    const clientIP = getClientIP(socket);
+    console.log('New connection:', socket.id, 'IP:', clientIP);
+    
+    // Проверяем не забанен ли IP
+    if (bannedIPs.has(clientIP)) {
+        console.log('Banned IP attempted to connect:', clientIP);
+        socket.emit('banned');
+        socket.disconnect(true);
+        return;
+    }
     
     // Добавляем в список всех подключенных
     allConnections.add(socket.id);
@@ -78,6 +105,13 @@ io.on('connection', (socket) => {
     io.emit('onlineCount', allConnections.size);
     
     socket.on('setNickname', (nickname) => {
+        // Повторная проверка IP при попытке установить никнейм
+        if (bannedIPs.has(clientIP)) {
+            socket.emit('banned');
+            socket.disconnect(true);
+            return;
+        }
+        
         // Validate nickname
         const englishOnly = /^[a-zA-Z0-9_]+$/;
         
@@ -111,7 +145,8 @@ io.on('connection', (socket) => {
             socketId: socket.id,
             avatarHue: generateAvatarHue(),
             joinedAt: Date.now(),
-            isAdmin: isAdmin
+            isAdmin: isAdmin,
+            ip: clientIP
         };
         
         users.set(userId, user);
@@ -122,7 +157,8 @@ io.on('connection', (socket) => {
             id: user.id,
             nickname: user.nickname,
             avatarHue: user.avatarHue,
-            isAdmin: user.isAdmin
+            isAdmin: user.isAdmin,
+            ip: clientIP
         });
         
         // Send acceptance and user data
@@ -152,11 +188,18 @@ io.on('connection', (socket) => {
     });
     
     socket.on('rejoin', (userData) => {
+        // Проверяем не забанен ли IP
+        if (bannedIPs.has(clientIP)) {
+            socket.emit('banned');
+            socket.disconnect(true);
+            return;
+        }
+        
         // Handle reconnection with existing nickname
         if (userData && userData.id && registeredUsers.has(userData.id)) {
             const registeredUser = registeredUsers.get(userData.id);
             
-            // Проверяем не забанен ли пользователь
+            // Проверяем не забанен ли пользователь по ID
             if (bannedUsers.has(userData.id)) {
                 socket.emit('banned');
                 return;
@@ -169,7 +212,8 @@ io.on('connection', (socket) => {
                 socketId: socket.id,
                 avatarHue: registeredUser.avatarHue,
                 joinedAt: Date.now(),
-                isAdmin: registeredUser.isAdmin
+                isAdmin: registeredUser.isAdmin,
+                ip: clientIP
             };
             
             users.set(userData.id, user);
@@ -260,6 +304,12 @@ io.on('connection', (socket) => {
         bannedUsers.add(targetUserId);
         bannedNicknames.add(targetUser.nickname.toLowerCase()); // Блокируем никнейм навсегда
         
+        // Блокируем IP адрес навсегда
+        if (targetUser.ip) {
+            bannedIPs.add(targetUser.ip);
+            console.log(`Banned IP: ${targetUser.ip} (user: ${targetUser.nickname})`);
+        }
+        
         // Remove all their messages
         const messagesToRemove = [];
         for (let i = messages.length - 1; i >= 0; i--) {
@@ -324,7 +374,8 @@ app.get('/health', (req, res) => {
         registeredUsers: registeredUsers.size,
         totalMessages: messages.length,
         adminExists: !!adminId,
-        bannedUsers: bannedUsers.size
+        bannedUsers: bannedUsers.size,
+        bannedIPs: bannedIPs.size
     });
 });
 
