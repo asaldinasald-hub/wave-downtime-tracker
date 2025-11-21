@@ -24,6 +24,7 @@ const messages = []; // Array of messages
 const bannedUsers = new Set(); // Set of banned userIds
 const bannedNicknames = new Set(); // Set of permanently banned nicknames (lowercase)
 const bannedIPs = new Set(); // Set of permanently banned IP addresses
+const userLastMessages = new Map(); // userId -> последнее сообщение для проверки дубликатов
 let adminId = null; // First user with nickname 'mefisto' becomes admin
 const MESSAGE_RETENTION_TIME = 24 * 60 * 60 * 1000; // 24 hours
 
@@ -278,12 +279,40 @@ io.on('connection', (socket) => {
             return;
         }
         
+        const trimmedMessage = messageText.trim();
+        
+        // Автомодерация: проверка на ссылки (http://, https://, www., .com, .ru, etc)
+        const urlRegex = /(https?:\/\/[^\s]+)|(www\.[^\s]+)|([a-zA-Z0-9-]+\.(com|ru|net|org|io|gg|xyz|me|co|uk|us|tv|yt|cc|link|site|online|store|app|dev|tech)[^\s]*)/gi;
+        if (urlRegex.test(trimmedMessage)) {
+            socket.emit('error', { message: 'Links are not allowed in chat' });
+            console.log(`Blocked link from ${user.nickname}: ${trimmedMessage}`);
+            return;
+        }
+        
+        // Автомодерация: проверка на упоминания @никнейм
+        if (/@\w+/.test(trimmedMessage)) {
+            socket.emit('error', { message: 'Mentions (@username) are not allowed' });
+            console.log(`Blocked mention from ${user.nickname}: ${trimmedMessage}`);
+            return;
+        }
+        
+        // Автомодерация: проверка на дубликаты сообщений
+        const lastMessage = userLastMessages.get(socket.userId);
+        if (lastMessage === trimmedMessage) {
+            socket.emit('error', { message: 'Cannot send duplicate messages' });
+            console.log(`Blocked duplicate from ${user.nickname}: ${trimmedMessage}`);
+            return;
+        }
+        
+        // Сохраняем последнее сообщение пользователя
+        userLastMessages.set(socket.userId, trimmedMessage);
+        
         const message = {
             id: uuidv4(),
             userId: user.id,
             nickname: user.nickname,
             avatarHue: user.avatarHue,
-            message: messageText.trim(),
+            message: trimmedMessage,
             timestamp: Date.now()
         };
         
@@ -292,7 +321,7 @@ io.on('connection', (socket) => {
         // Broadcast message to all users
         io.emit('message', message);
         
-        console.log(`Message from ${user.nickname}: ${messageText}`);
+        console.log(`Message from ${user.nickname}: ${trimmedMessage}`);
     });
     
     socket.on('banUser', (targetUserId) => {
