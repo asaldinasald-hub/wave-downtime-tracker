@@ -772,6 +772,7 @@ body {
     text-decoration: none;
     font-weight: 600;
     transition: all 0.3s;
+    vertical-align: middle;
 }
 
 .discord-link:hover {
@@ -782,7 +783,7 @@ body {
 .discord-icon {
     width: 20px;
     height: 20px;
-    vertical-align: middle;
+    flex-shrink: 0;
 }
 
 /* Responsive design */
