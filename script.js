@@ -177,9 +177,11 @@ async function updateUI(data) {
     const timerLabelElement = document.getElementById('timerLabel');
     
     if (!data) {
-        // API недоступно
+        // API недоступно - продолжаем работать с последними данными
         currentState.apiAvailable = false;
-        statusTextElement.textContent = 'WEAO API IS DOWN!';
+        
+        // Показываем предупреждение но не останавливаем работу
+        statusTextElement.textContent = 'WEAO API IS DOWN! (Using cached data)';
         statusTextElement.className = 'status-text status-down';
         
         // Показываем последнюю известную версию
@@ -188,9 +190,23 @@ async function updateUI(data) {
         } else {
             versionElement.textContent = 'Unknown';
         }
+        
+        // Продолжаем показывать таймер если Wave был DOWN
+        if (currentState.isDown && currentState.apiDownSince) {
+            timerSectionElement.classList.remove('hidden');
+            timerLabelElement.textContent = 'Down for';
+            // Таймер будет обновляться через setInterval
+        }
+        
+        // Обновляем статистику (Last и Longest продолжают расти)
+        updateStatsDisplay();
         return;
     }
     
+    // API снова доступен
+    if (!currentState.apiAvailable) {
+        console.log('API reconnected! Syncing data...');
+    }
     currentState.apiAvailable = true;
     console.log('Wave data:', data);
     
@@ -225,14 +241,20 @@ async function updateUI(data) {
     
     console.log('Update Status:', data.updateStatus, 'Is Down:', isCurrentlyDown);
     
-    // Получаем время обновления Roblox для Windows
+    // Получаем время обновления Roblox для Windows (только если API доступен)
     const robloxData = await fetchRobloxVersion();
     if (robloxData && robloxData.WindowsDate) {
         const robloxTimestamp = parseApiDate(robloxData.WindowsDate);
         if (robloxTimestamp) {
-            currentState.apiDownSince = robloxTimestamp;
-            console.log('Roblox Windows updated at:', robloxData.WindowsDate);
+            // Обновляем apiDownSince только если оно ещё не установлено или изменилось
+            if (!currentState.apiDownSince || currentState.apiDownSince !== robloxTimestamp) {
+                currentState.apiDownSince = robloxTimestamp;
+                console.log('Roblox Windows updated at:', robloxData.WindowsDate);
+            }
         }
+    } else if (!currentState.apiDownSince && currentState.isDown) {
+        // Если нет данных Roblox но Wave DOWN, используем текущее время как fallback
+        console.log('Roblox API unavailable, using current time as fallback');
     }
     
     // Handle state changes
