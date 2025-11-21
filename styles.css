@@ -1,0 +1,204 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    background-color: rgb(15, 23, 30);
+    background-image: url('background.png'), url('https://getwave.gg/assets/bg.svg');
+    background-size: cover;
+    background-attachment: fixed;
+    color: rgb(255, 255, 255);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    width: 100%;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+}
+
+.logo {
+    width: 120px;
+    height: 120px;
+    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5));
+}
+
+.header h1 {
+    font-size: 48px;
+    font-weight: 700;
+    font-style: italic;
+    line-height: 1.2;
+    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.status-card {
+    backdrop-filter: blur(8px);
+    background-color: rgba(15, 23, 36, 0.6);
+    background-image: url('https://getwave.gg/assets/CardBG.svg');
+    background-size: cover;
+    border: 0.8px solid rgb(53, 81, 104);
+    border-radius: 16px;
+    padding: 48px;
+    margin-bottom: 32px;
+    filter: drop-shadow(rgba(0, 0, 0, 0.04) 0px 10px 8px) drop-shadow(rgba(0, 0, 0, 0.1) 0px 4px 3px);
+}
+
+.version-info {
+    text-align: center;
+    margin-bottom: 32px;
+    font-size: 24px;
+    line-height: 32px;
+}
+
+.label {
+    opacity: 0.7;
+    font-weight: 300;
+    margin-right: 12px;
+}
+
+.version {
+    font-weight: 700;
+    font-size: 28px;
+    color: rgb(147, 197, 253);
+}
+
+.status-indicator {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.status-text {
+    font-size: 36px;
+    font-weight: 700;
+    font-style: italic;
+    line-height: 1.2;
+    padding: 24px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.status-up {
+    color: rgb(34, 197, 94);
+    background-color: rgba(34, 197, 94, 0.1);
+    border: 2px solid rgba(34, 197, 94, 0.3);
+}
+
+.status-down {
+    color: rgb(239, 68, 68);
+    background-color: rgba(239, 68, 68, 0.1);
+    border: 2px solid rgba(239, 68, 68, 0.3);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+.timer-section {
+    text-align: center;
+}
+
+.timer {
+    font-size: 60px;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    color: rgb(147, 197, 253);
+    margin-bottom: 12px;
+    text-shadow: 0 2px 10px rgba(147, 197, 253, 0.5);
+}
+
+.timer-label {
+    font-size: 20px;
+    opacity: 0.7;
+    font-style: italic;
+}
+
+.stats-container {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+}
+
+.stat-card {
+    flex: 1;
+    min-width: 250px;
+    backdrop-filter: blur(8px);
+    background-color: rgba(15, 23, 36, 0.6);
+    background-image: url('https://getwave.gg/assets/CardBG.svg');
+    background-size: cover;
+    border: 0.8px solid rgb(53, 81, 104);
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+    filter: drop-shadow(rgba(0, 0, 0, 0.04) 0px 10px 8px) drop-shadow(rgba(0, 0, 0, 0.1) 0px 4px 3px);
+}
+
+.stat-label {
+    font-size: 18px;
+    opacity: 0.7;
+    margin-bottom: 16px;
+    font-weight: 300;
+}
+
+.stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    color: rgb(251, 191, 36);
+}
+
+.footer {
+    text-align: center;
+    opacity: 0.6;
+    font-style: italic;
+    font-size: 16px;
+    margin-top: 32px;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .header h1 {
+        font-size: 32px;
+    }
+    
+    .status-card {
+        padding: 32px 24px;
+    }
+    
+    .status-text {
+        font-size: 28px;
+    }
+    
+    .timer {
+        font-size: 48px;
+    }
+    
+    .stat-value {
+        font-size: 28px;
+    }
+}

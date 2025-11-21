@@ -1,0 +1,11 @@
+{
+  "name": "wave-downtime-tracker",
+  "version": "1.0.0",
+  "description": "Real-time downtime tracker for Wave exploit",
+  "scripts": {
+    "dev": "python proxy_server.py"
+  },
+  "keywords": ["wave", "downtime", "tracker", "roblox"],
+  "author": "",
+  "license": "MIT"
+}

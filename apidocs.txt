@@ -1,0 +1,274 @@
+# Exploits
+
+{% hint style="info" %}
+**Reminder:** You can access these endpoints on **any** of our domains without restrictions. If you hit our **rate limit**, reduce the **interval** at which you are fetching our services.
+
+The user-agent **`WEAO-3PService`** is required to access any of WEAO's resources.
+
+**Main Domains:**
+
+* weao.xyz
+* whatexpsare.online
+
+**Alternatives:**
+
+* whatexploitsaretra.sh
+* weao.gg
+  {% endhint %}
+
+## Retrieving All Exploit Statuses
+
+This endpoint will return the latest status of all executors on WEAO.
+
+We've left some objects undocumented that are not being used, below are the main ones
+
+You can obtain all exploit statuses via this route:&#x20;
+
+<mark style="color:green;">`GET`</mark>  `https://weao.xyz/api/status/exploits`&#x20;
+
+| Object           | Type    | What it is                                                       |
+| ---------------- | ------- | ---------------------------------------------------------------- |
+| `title`          | string  | Name of the exploit                                              |
+| `version`        | string  | Version of the exploit                                           |
+| `updatedDate`    | string  | When the exploit was last updated                                |
+| `uncStatus`      | boolean | If the exploit supports the Unified Naming Convention            |
+| `free`           | boolean | If the exploit is free or paid                                   |
+| `detected`       | boolean | If the exploit is detected by Hyperion                           |
+| `rbxversion`     | string  | Roblox version hash the exploit supports                         |
+| `updateStatus`   | boolean | If the exploit is updated                                        |
+| `websitelink`    | string  | Website of the exploit                                           |
+| `discordlink`    | string  | Discord of the exploit                                           |
+| `purchaselink`   | string  | Where the exploit can be purchased                               |
+| `platform`       | string  | Platform of the exploit                                          |
+| `type`           | string  | Platform + Type of exploit, mexecutor = Mac Executor             |
+| `cost`           | string  | How much the exploit costs                                       |
+| `decompiler`     | boolean | If the exploit has a decompiler                                  |
+| `multiInject`    | boolean | If the exploit supports multi instance                           |
+| `suncPercentage` | number  | The sUNC percentage score as an int                              |
+| `uncPercentage`  | number  | The UNC percentage score as an int                               |
+| `sunc`           | object  | Contains sUNC scrap/key                                          |
+| `suncScrap`      | string  | sUNC scrap                                                       |
+| `suncKey`        | string  | sUNC key                                                         |
+| `hidden`         | boolean | If the exploit is hidden on the WEAO frontend                    |
+| `keysystem`      | boolean | If the exploit has a key system (Only for free exploits)         |
+| `clientmods`     | boolean | If true, exploit bypasses client modification bans, not banwaves |
+
+Example Response:&#x20;
+
+{% tabs %}
+{% tab title="200 (OK)" %}
+
+```json
+{
+    "sunc": {
+      "suncScrap": "AitoAcj9n4VV2ykn",
+      "suncKey": "NBMu87rj1kamn6cw8VpTu8neoIeJFPdN"
+    },
+    "recommendedReason": {
+      "features": []
+    },
+    "_id": "67d6005efa8c791236079278",
+    "title": "Potassium",
+    "version": "1.7.9",
+    "updatedDate": "07/24/2025 at 3:47 PM UTC",
+    "uncStatus": true,
+    "free": false,
+    "detected": true,
+    "rbxversion": "version-2a06298afe3947ab",
+    "updateStatus": true,
+    "websitelink": "https://potassium.pro",
+    "discordlink": "https://discord.com/invite/potassium",
+    "beta": false,
+    "platform": "Windows",
+    "extype": "wexecutor",
+    "roleId": "1350595821728698388",
+    "purchaselink": "https://privana.sell.app/product/potassium?variant=329244&affiliate=weao",
+    "index": 7,
+    "cost": "$20 Lifetime",
+    "decompiler": true,
+    "multiInject": true,
+    "suncPercentage": 100,
+    "uncPercentage": 99,
+    "__v": 1
+  },
+  {
+    "recommendedReason": {
+      "features": []
+    },
+    "_id": "67e0d0d87d091e8f8b6d2a35",
+    "title": "Matcha",
+    "version": "1.6.0",
+    "updatedDate": "07/24/2025 at 4:30 AM UTC",
+    "uncStatus": false,
+    "free": false,
+    "detected": false,
+    "rbxversion": "version-2a06298afe3947ab",
+    "updateStatus": true,
+    "websitelink": "https://discord.gg/AURAHhSMxc",
+    "discordlink": "https://discord.gg/matchalol",
+    "purchaselink": "https://bloxproducts.com/r/weao#Matcha",
+    "beta": false,
+    "platform": "Windows",
+    "extype": "wexternal",
+    "roleId": "1353570443461660693",
+    "index": -1,
+    "elementCertified": true,
+    "cost": "$11.50 Lifetime",
+    "__v": 1
+  },
+  {
+    "recommendedReason": {
+      "features": []
+    },
+    "_id": "679553cd2eea89d30d0dae57",
+    "title": "Xeno",
+    "version": "1.2.45",
+    "updatedDate": "07/24/2025 at 9:26 AM UTC",
+    "uncStatus": true,
+    "free": true,
+    "detected": true,
+    "rbxversion": "version-2a06298afe3947ab",
+    "updateStatus": true,
+    "websitelink": "https://www.xeno.onl/",
+    "discordlink": "https://discord.gg/xe-no",
+    "beta": false,
+    "platform": "Windows",
+    "extype": "wexecutor",
+    "roleId": "1332793088879497338",
+    "index": 9,
+    "decompiler": false,
+    "multiInject": true,
+    "suncPercentage": 41,
+    "uncPercentage": 81,
+    "__v": 1
+  },
+  {
+    "sunc": {
+      "suncScrap": "35qeYipTXagsWR84",
+      "suncKey": "zGh9TypaSJhGuYEKmDkvAQNgse7W2N5k"
+    },
+    "recommendedReason": {
+      "features": []
+    },
+    "_id": "68084641b50548f01fd62713",
+    "title": "Bunni.lol",
+    "version": "2.2.2",
+    "updatedDate": "07/24/2025 at 9:19 PM UTC",
+    "uncStatus": true,
+    "free": true,
+    "detected": true,
+    "rbxversion": "version-2a06298afe3947ab",
+    "updateStatus": true,
+    "websitelink": "https://realbunni.com/",
+    "discordlink": "https://discord.gg/9DPW2G22cF",
+    "beta": false,
+    "platform": "Windows",
+    "extype": "wexecutor",
+    "roleId": "1364416300444549151",
+    "index": 9,
+    "elementCertified": true,
+    "decompiler": true,
+    "multiInject": true,
+    "suncPercentage": 100,
+    "uncPercentage": 99,
+    "__v": 1,
+    "purchaselink": "https://robloxcheatz.com/affiliate/weao",
+    "keysystem": true
+  },
+  {
+    "recommendedReason": {
+      "features": []
+    },
+    "_id": "680ab721b50548f01fd62715",
+    "title": "Photon",
+    "version": "5.2",
+    "updatedDate": "07/23/2025 at 11:51 PM UTC",
+    "uncStatus": false,
+    "free": false,
+    "detected": false,
+    "rbxversion": "version-2a06298afe3947ab",
+    "updateStatus": true,
+    "websitelink": "https://photonsys.sellpass.io/",
+    "discordlink": "https://discord.gg/vro",
+    "purchaselink": "https://photonsys.sellpass.io/products/Photon-Lifetime",
+    "beta": false,
+    "platform": "Windows",
+    "extype": "wexternal",
+    "roleId": "1365085484455428147",
+    "index": 1,
+    "elementCertified": true,
+    "cost": "$20 Lifetime",
+    "__v": 1
+  },
+```
+
+{% endtab %}
+
+{% tab title="429 (Rate limit)" %}
+
+```json
+This is only an example, your response might be different!
+{
+    "error": "Too Many Requests",
+    "rateLimitInfo": {
+        "remainingTime": 120,
+        "requestsRemaining": 0,
+        "resetTime": 1753410630360
+    }
+}
+```
+
+{% endtab %}
+{% endtabs %}
+
+## Retrieving a exploit status
+
+You can obtain a current exploit status via this route:
+
+<mark style="color:green;">`GET`</mark>  `https://weao.xyz/api/status/exploits/[exploit]`
+
+Example Response:&#x20;
+
+{% tabs %}
+{% tab title="200 (OK)" %}
+
+```json
+{
+    "_id": "66a679cc5b36b46c9327b0a7",
+    "title": "Synapse Z",
+    "version": "v0.13-638",
+    "updatedDate": "8/14/2024 at 07:25 PM EST",
+    "uncStatus": true,
+    "free": false,
+    "detected": true,
+    "rbxversion": "version-b67e7cbe150a4c59",
+    "updateStatus": false,
+    "websitelink": "https://synz.lol",
+    "discordlink": "https://discord.gg/synz",
+    "beta": false,
+    "platform": "Windows",
+    "extype": "wexecutor",
+    "roleId": "1267164077503811686",
+    "purchaselink": "https://synapsez.mysellix.io/",
+    "index": 3
+}
+```
+
+{% endtab %}
+
+{% tab title="429 (Rate limit)" %}
+
+```json
+This is only an example, your response might be different!
+{
+    "error": "Too Many Requests",
+    "rateLimitInfo": {
+        "remainingTime": 120,
+        "requestsRemaining": 0,
+        "resetTime": 1753410630360
+    }
+}
+```
+
+{% endtab %}
+{% endtabs %}

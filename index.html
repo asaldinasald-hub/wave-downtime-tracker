@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wave Downtime Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="logo.png" alt="Wave Logo" class="logo">
+            <h1>WAVE Downtime Tracker</h1>
+        </div>
+        
+        <div class="status-card">
+            <div class="version-info">
+                <span class="label">Current Version:</span>
+                <span class="version" id="version">Loading...</span>
+            </div>
+            
+            <div class="status-indicator" id="statusIndicator">
+                <div class="status-text" id="statusText">Checking status...</div>
+            </div>
+            
+            <div class="timer-section" id="timerSection">
+                <div class="timer" id="timer">00:00:00</div>
+                <div class="timer-label" id="timerLabel">Downtime</div>
+            </div>
+        </div>
+        
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-label">Last Downtime</div>
+                <div class="stat-value" id="lastDowntime">--:--:--</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Longest Downtime Record</div>
+                <div class="stat-value" id="record">--:--:--</div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Data from WEAO API • Auto-refreshes every 30 seconds</p>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
