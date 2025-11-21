@@ -395,6 +395,65 @@ app.get('/health', (req, res) => {
     });
 });
 
+// Get banned IPs list
+app.get('/admin/banned-ips', (req, res) => {
+    const bannedIPsList = Array.from(bannedIPs);
+    res.json({
+        count: bannedIPsList.length,
+        ips: bannedIPsList
+    });
+});
+
+// Clear all bans (requires admin key)
+app.post('/admin/clear-bans', express.json(), (req, res) => {
+    const { adminKey } = req.body;
+    
+    // Simple admin key check (можно улучшить)
+    if (adminKey !== 'mefisto_admin_2025') {
+        return res.status(403).json({ error: 'Invalid admin key' });
+    }
+    
+    const stats = {
+        bannedIPsCleared: bannedIPs.size,
+        bannedUsersCleared: bannedUsers.size,
+        bannedNicknamesCleared: bannedNicknames.size
+    };
+    
+    // Очищаем все баны
+    bannedIPs.clear();
+    bannedUsers.clear();
+    bannedNicknames.clear();
+    
+    console.log('All bans cleared by admin:', stats);
+    
+    res.json({
+        success: true,
+        message: 'All bans cleared',
+        stats: stats
+    });
+});
+
+// Remove specific IP ban
+app.post('/admin/unban-ip', express.json(), (req, res) => {
+    const { adminKey, ip } = req.body;
+    
+    if (adminKey !== 'mefisto_admin_2025') {
+        return res.status(403).json({ error: 'Invalid admin key' });
+    }
+    
+    if (!ip) {
+        return res.status(400).json({ error: 'IP address required' });
+    }
+    
+    if (bannedIPs.has(ip)) {
+        bannedIPs.delete(ip);
+        console.log('IP unbanned:', ip);
+        res.json({ success: true, message: `IP ${ip} unbanned` });
+    } else {
+        res.status(404).json({ error: 'IP not found in ban list' });
+    }
+});
+
 const PORT = process.env.PORT || 3000;
 
 server.listen(PORT, () => {
