@@ -254,6 +254,13 @@ body {
     transition: transform 0.3s ease;
     min-width: 240px;
     width: 240px;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+}
+
+.credit-card:hover {
+    transform: translateY(-2px);
 }
 
 .credit-card::before {
@@ -269,24 +276,8 @@ body {
     pointer-events: none;
 }
 
-/* Радужная анимация для автора */
-.author-card::before {
-    background: linear-gradient(
-        90deg,
-        #ff0000,
-        #ff7f00,
-        #ffff00,
-        #00ff00,
-        #0000ff,
-        #4b0082,
-        #9400d3,
-        #ff0000
-    );
-    background-size: 200% 100%;
-    animation: rainbow 3s linear infinite;
-}
-
-/* Анимация в цветах Wave для ссылки */
+/* Анимация в цветах Wave для обеих карточек */
+.author-card::before,
 .wave-card::before {
     background: linear-gradient(
         90deg,
@@ -298,21 +289,6 @@ body {
     );
     background-size: 200% 100%;
     animation: waveGlow 3s linear infinite;
-}
-
-.wave-card {
-    cursor: pointer;
-    text-decoration: none;
-    color: inherit;
-}
-
-.wave-card:hover {
-    transform: translateY(-2px);
-}
-
-@keyframes rainbow {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
 }
 
 @keyframes waveGlow {
