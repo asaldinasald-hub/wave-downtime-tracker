@@ -180,6 +180,19 @@ function displayMessage(data) {
     if (data.type === 'system') {
         messageDiv.classList.add('system-message');
         messageDiv.innerHTML = `<span class="system-text">${escapeHtml(data.message)}</span>`;
+        
+        // Удаляем системное сообщение через 3 секунды
+        setTimeout(() => {
+            if (messageDiv && messageDiv.parentNode) {
+                messageDiv.style.transition = 'opacity 0.3s ease-out';
+                messageDiv.style.opacity = '0';
+                setTimeout(() => {
+                    if (messageDiv.parentNode) {
+                        messageDiv.remove();
+                    }
+                }, 300);
+            }
+        }, 3000);
     } else {
         const isOwnMessage = currentUser && data.userId === currentUser.id;
         if (isOwnMessage) {
