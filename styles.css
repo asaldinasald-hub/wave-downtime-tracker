@@ -168,6 +168,114 @@ body {
     color: rgb(251, 191, 36);
 }
 
+.credits-section {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    align-items: center;
+    margin: 48px 0 32px 0;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.credit-card {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 16px 24px;
+    border-radius: 12px;
+    backdrop-filter: blur(8px);
+    background-color: rgba(15, 23, 36, 0.4);
+    position: relative;
+    transition: transform 0.3s ease;
+    min-width: 240px;
+    width: 240px;
+}
+
+.credit-card::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 12px;
+    padding: 2px;
+    background: linear-gradient(90deg, transparent, transparent);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+}
+
+/* Радужная анимация для автора */
+.author-card::before {
+    background: linear-gradient(
+        90deg,
+        #ff0000,
+        #ff7f00,
+        #ffff00,
+        #00ff00,
+        #0000ff,
+        #4b0082,
+        #9400d3,
+        #ff0000
+    );
+    background-size: 200% 100%;
+    animation: rainbow 3s linear infinite;
+}
+
+/* Анимация в цветах Wave для ссылки */
+.wave-card::before {
+    background: linear-gradient(
+        90deg,
+        rgb(53, 81, 104),
+        rgb(147, 197, 253),
+        rgb(71, 94, 130),
+        rgb(147, 197, 253),
+        rgb(53, 81, 104)
+    );
+    background-size: 200% 100%;
+    animation: waveGlow 3s linear infinite;
+}
+
+.wave-card {
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+}
+
+.wave-card:hover {
+    transform: translateY(-2px);
+}
+
+@keyframes rainbow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes waveGlow {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.avatar-video {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.wave-logo {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+}
+
+.credit-text {
+    font-size: 18px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
 .footer {
     text-align: center;
     opacity: 0.6;
