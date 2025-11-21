@@ -107,8 +107,9 @@ body {
 
 .decorative-cloud {
     position: absolute;
-    top: 30px;
-    right: -5px;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-60%);
     width: 50px;
     height: 20px;
     background: rgba(147, 197, 253, 0.9625);
@@ -116,8 +117,8 @@ body {
     z-index: 12;
     pointer-events: none;
     animation: cloudFloat 3s ease-in-out infinite;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
 }
 
 .decorative-cloud::before {
@@ -144,8 +145,9 @@ body {
 
 .decorative-cloud-2 {
     position: absolute;
-    top: 32px;
-    right: -30px;
+    bottom: -13px;
+    left: 50%;
+    transform: translateX(-20%);
     width: 45px;
     height: 18px;
     background: rgba(147, 197, 253, 0.9625);
@@ -153,8 +155,8 @@ body {
     z-index: 13;
     pointer-events: none;
     animation: cloudFloat 3s ease-in-out infinite 0.5s;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
 }
 
 .decorative-cloud-2::before {
