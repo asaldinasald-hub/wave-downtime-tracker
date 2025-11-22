@@ -155,7 +155,8 @@ async function initializeChat() {
         console.log('✅ Socket.io object created');
         
         setupSocketListeners();
-        loadSavedNickname();
+        // НЕ вызываем loadSavedNickname() здесь - сокет еще не подключен!
+        // Вызовем его в обработчике 'connect'
     } catch (error) {
         console.error('❌ Socket.io error:', error);
         alert('Failed to initialize chat. Error: ' + error.message);
@@ -174,12 +175,9 @@ function setupSocketListeners() {
             console.log('⚠️ No fingerprint to send (using fallback on server)');
         }
         
-        if (currentUser) {
-            console.log('🔄 Rejoining with currentUser:', currentUser);
-            socket.emit('rejoin', currentUser);
-        } else {
-            console.log('ℹ️ No currentUser to rejoin');
-        }
+        // Теперь когда сокет подключен - пытаемся войти с сохраненными данными
+        console.log('🔐 Attempting to load saved nickname...');
+        loadSavedNickname();
     });
     
     socket.on('connect_error', (error) => {
@@ -249,12 +247,13 @@ function setupSocketListeners() {
     
     socket.on('savedIPData', (data) => {
         // Получены сохраненные данные по IP - используем их для автозаполнения
-        console.log('Received saved IP data:', data);
+        console.log('📥 Received saved IP data:', data);
         if (data && data.nickname && data.avatarHue !== undefined) {
-            // Если есть сохраненные данные, используем showChatInterface()
+            // ВАЖНО: НЕ показываем chat сразу, только автозаполняем
+            // Пользователь должен войти через rejoin чтобы получить currentUser
+            console.log('✏️ Auto-filling nickname from saved IP data:', data.nickname);
             document.getElementById('nicknameInput').value = data.nickname;
-            document.getElementById('welcomeNickname').textContent = data.nickname;
-            showChatInterface();
+            // НЕ вызываем showChatInterface() здесь - ждем rejoin/nicknameAccepted
         }
     });
     
@@ -277,16 +276,25 @@ function loadSavedNickname() {
     const savedUserId = localStorage.getItem('chatUserId');
     const savedAvatarHue = localStorage.getItem('chatAvatarHue');
     
+    console.log('🔍 Checking saved nickname:', { 
+        hasNickname: !!savedNickname, 
+        hasUserId: !!savedUserId, 
+        hasAvatarHue: !!savedAvatarHue 
+    });
+    
     if (savedNickname && savedUserId && savedAvatarHue) {
-        // Автоматически входим с сохраненными данными
+        console.log('✅ Found saved credentials, emitting rejoin...');
         socket.emit('rejoin', {
             id: savedUserId,
             nickname: savedNickname,
             avatarHue: parseInt(savedAvatarHue)
         });
+        console.log('📤 Rejoin event emitted');
         
         // НЕ скрываем форму сразу - ждем ответа от сервера
         // Сервер отправит nicknameAccepted, и тогда вызовется showChatInterface()
+    } else {
+        console.log('ℹ️ No saved credentials found');
     }
 }
 
