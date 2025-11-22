@@ -274,7 +274,7 @@ function showChatInterface() {
     const chatContainer = document.getElementById('chatContainer');
     console.log('chatContainer before:', chatContainer.style.display, chatContainer.classList);
     chatContainer.classList.remove('hidden');
-    chatContainer.style.display = 'block';
+    chatContainer.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important;';
     console.log('chatContainer after:', chatContainer.style.display, chatContainer.classList);
 }
 
