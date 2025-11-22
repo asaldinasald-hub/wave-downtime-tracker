@@ -52,7 +52,6 @@ async function loadSavedData() {
             if (dbCache.apiDownSince) {
                 currentState.apiDownSince = dbCache.apiDownSince;
             }
-            console.log('✅ Loaded data from MongoDB cache');
         } else {
             // Fallback на localStorage
             const saved = localStorage.getItem(STORAGE_KEY);
@@ -73,7 +72,6 @@ async function loadSavedData() {
                 if (data.apiDownSince) {
                     currentState.apiDownSince = data.apiDownSince;
                 }
-                console.log('✅ Loaded data from localStorage');
             }
         }
         
@@ -104,7 +102,6 @@ async function saveData() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dataToSave)
             });
-            console.log('📦 Cache saved to MongoDB');
         } catch (error) {
             console.warn('Failed to save cache to MongoDB:', error);
         }
@@ -119,7 +116,6 @@ async function loadCacheFromDB() {
         const response = await fetch(CACHE_API_URL);
         if (response.ok) {
             const cache = await response.json();
-            console.log('📥 Loaded cache from MongoDB:', cache);
             return cache;
         }
     } catch (error) {
@@ -136,33 +132,27 @@ async function fetchWithFallback(endpoint) {
     for (const domain of domains) {
         try {
             const url = `https://${domain}${endpoint}`;
-            console.log(`Trying domain: ${domain}`);
             
             const response = await fetch(url, {
                 headers: { 'User-Agent': 'WEAO-3PService' }
             });
             
             if (response.status === 429) {
-                console.warn(`⚠️ Rate limit on ${domain}, trying next...`);
                 continue;
             }
             
             if (!response.ok) {
-                console.warn(`❌ HTTP ${response.status} on ${domain}`);
                 continue;
             }
             
             const data = await response.json();
-            console.log(`✅ Success from ${domain}`);
             return data;
             
         } catch (error) {
-            console.warn(`❌ Error on ${domain}:`, error);
             continue;
         }
     }
     
-    console.error('All WEAO domains failed');
     return null;
 }
 
@@ -350,7 +340,6 @@ async function updateUI(data) {
     
     // API снова доступен
     if (!currentState.apiAvailable) {
-        console.log('API reconnected! Syncing data...');
         // Показываем успешное подключение на 3 секунды
         apiStatusSection.classList.remove('hidden');
         apiStatusMessage.textContent = '✅ API reconnected successfully';
@@ -363,7 +352,6 @@ async function updateUI(data) {
         apiStatusSection.classList.add('hidden');
     }
     currentState.apiAvailable = true;
-    console.log('Wave data:', data);
     
     // Сохраняем текущую версию как последнюю известную
     if (data.version) {
@@ -384,7 +372,6 @@ async function updateUI(data) {
                 currentState.longestDowntime = finalDowntime;
             }
             
-            console.log('Version updated! Saved downtime:', formatDuration(finalDowntime));
             await saveData(); // Сохраняем в localStorage и MongoDB
         }
     } else {
@@ -394,8 +381,6 @@ async function updateUI(data) {
     // Check if Wave is down (updateStatus: false means it's down)
     const isCurrentlyDown = data.updateStatus === false;
     
-    console.log('Update Status:', data.updateStatus, 'Is Down:', isCurrentlyDown);
-    
     // Получаем время обновления Roblox для Windows (только если API доступен)
     const robloxData = await fetchRobloxVersion();
     if (robloxData && robloxData.WindowsDate) {
@@ -404,12 +389,8 @@ async function updateUI(data) {
             // Обновляем apiDownSince только если оно ещё не установлено или изменилось
             if (!currentState.apiDownSince || currentState.apiDownSince !== robloxTimestamp) {
                 currentState.apiDownSince = robloxTimestamp;
-                console.log('Roblox Windows updated at:', robloxData.WindowsDate);
             }
         }
-    } else if (!currentState.apiDownSince && currentState.isDown) {
-        // Если нет данных Roblox но Wave DOWN, используем текущее время как fallback
-        console.log('Roblox API unavailable, using current time as fallback');
     }
     
     // Handle state changes
@@ -420,7 +401,6 @@ async function updateUI(data) {
         currentState.version = data.version;
     } else if (!isCurrentlyDown && currentState.isDown) {
         // Wave came back up - TRIGGER NOTIFICATION!
-        console.log('🎉 Wave is now UP! Triggering notification...');
         showWaveUpNotification();
         
         currentState.isDown = false;
@@ -519,17 +499,10 @@ function initNotifications() {
     // Ensure audio is loaded
     if (notificationAudio) {
         notificationAudio.load();
-        console.log('✅ Notification audio loaded');
         
         notificationAudio.addEventListener('error', (e) => {
-            console.error('❌ Audio loading error:', e);
+            console.error('Audio loading error:', e);
         });
-        
-        notificationAudio.addEventListener('canplaythrough', () => {
-            console.log('✅ Audio ready to play');
-        });
-    } else {
-        console.error('❌ Notification audio element not found');
     }
     
     // Load notification preference
@@ -555,8 +528,6 @@ function initNotifications() {
                         icon: 'wavebluelogo.webp',
                         tag: 'wave-notification-test'
                     });
-                    
-                    console.log('Notifications enabled');
                 } else {
                     alert('Please allow notifications to use this feature');
                 }
@@ -568,39 +539,26 @@ function initNotifications() {
             notificationsEnabled = false;
             notificationBtn.classList.remove('active');
             localStorage.setItem('notificationsEnabled', 'false');
-            console.log('Notifications disabled');
         }
     });
 }
 
 function showWaveUpNotification() {
     if (!notificationsEnabled) {
-        console.log('❌ Notifications not enabled');
         return;
     }
     
-    console.log('🔔 Showing Wave UP notification');
-    
     // Play notification sound
     if (notificationAudio) {
-        console.log('🔊 Attempting to play notification sound...');
         notificationAudio.currentTime = 0;
-        notificationAudio.volume = 1.0; // Max volume
+        notificationAudio.volume = 1.0;
         
         const playPromise = notificationAudio.play();
         if (playPromise !== undefined) {
-            playPromise
-                .then(() => {
-                    console.log('✅ Notification sound playing');
-                })
-                .catch(err => {
-                    console.error('❌ Failed to play notification sound:', err);
-                    console.log('Audio state:', notificationAudio.readyState);
-                    console.log('Audio src:', notificationAudio.currentSrc);
-                });
+            playPromise.catch(err => {
+                console.error('Failed to play notification sound:', err);
+            });
         }
-    } else {
-        console.error('❌ Notification audio element is null');
     }
     
     // Show Windows notification
@@ -614,38 +572,7 @@ function showWaveUpNotification() {
     }
 }
 
-// Test notification API (only for mefisto)
-async function testNotification() {
-    try {
-        // Check if user is mefisto (from chat)
-        const chatNickname = localStorage.getItem('chatNickname');
-        
-        // Call API endpoint
-        const response = await fetch('/api/test-notification', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                nickname: chatNickname || ''
-            })
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            console.log('🧪 Testing notification (mefisto only)');
-            showWaveUpNotification();
-        } else {
-            console.log('❌', result.error);
-        }
-    } catch (error) {
-        console.error('Failed to test notification:', error);
-    }
-}
 
-// Expose test function to window for API access
-window.testWaveNotification = testNotification;
 
 // Start the application
 init();
