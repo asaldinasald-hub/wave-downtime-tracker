@@ -595,6 +595,15 @@ io.on('connection', (socket) => {
             return;
         }
         
+        // Автомодерация: проверка на неанглийские символы
+        // Разрешены: английские буквы, цифры, базовые символы, пробелы и эмодзи (Unicode > 127)
+        const hasNonEnglish = /[а-яА-ЯёЁ\u0400-\u04FF\u4E00-\u9FFF\u3040-\u309F\u30A0-\u30FF\uAC00-\uD7AF\u0590-\u05FF\u0600-\u06FF\u0750-\u077F\u0900-\u097F\uFF00-\uFFEF]/.test(trimmedMessage);
+        if (hasNonEnglish) {
+            socket.emit('error', { message: 'Only English language is allowed in chat' });
+            console.log(`Blocked non-English message from ${user.nickname}: ${trimmedMessage}`);
+            return;
+        }
+        
         // Сохраняем последнее сообщение пользователя
         userLastMessages.set(socket.userId, trimmedMessage);
         
