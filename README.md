@@ -3,7 +3,7 @@
 Real-time downtime monitoring for Wave exploit with live statistics and history tracking.
 
 ## 🌐 Live Demo
-[wave-downtime.vercel.app](https://your-domain.vercel.app) _(после деплоя)_
+[wavedowntime.vercel.app](https://wavedowntime-epzpl0q4l-asaldinasald-hubs-projects.vercel.app)
 
 ## ✨ Features
 
