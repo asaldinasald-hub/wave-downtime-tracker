@@ -1108,6 +1108,8 @@ body {
         overflow-x: hidden !important;
         width: 100vw;
         max-width: 100vw;
+        background-size: 70%; /* Zoom out - show more background */
+        background-position: center;
     }
     
     .container {
@@ -1388,6 +1390,7 @@ body {
 @media (max-width: 480px) {
     body {
         padding: 6px;
+        background-size: 60%; /* Zoom out more on small mobile */
     }
     
     .container {
