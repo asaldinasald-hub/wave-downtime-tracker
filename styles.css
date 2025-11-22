@@ -921,6 +921,10 @@ body {
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s;
+    -webkit-tap-highlight-color: rgba(147, 197, 253, 0.3);
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .chat-input-container button:hover:not(:disabled) {
@@ -930,6 +934,8 @@ body {
 .chat-input-container button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    background: rgb(100, 116, 139) !important;
+    pointer-events: none;
 }
 
 .message-cooldown {

@@ -278,6 +278,18 @@ function showChatInterface() {
     chatContainer.classList.remove('hidden');
     chatContainer.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important;';
     console.log('chatContainer after:', chatContainer.style.display, chatContainer.classList);
+    
+    // Ensure send button is enabled
+    const sendBtn = document.getElementById('sendMessageBtn');
+    const messageInput = document.getElementById('messageInput');
+    if (sendBtn) {
+        sendBtn.disabled = false;
+        console.log('Send button enabled');
+    }
+    if (messageInput) {
+        messageInput.disabled = false;
+        console.log('Message input enabled');
+    }
 }
 
 function showError(message) {
@@ -450,7 +462,13 @@ document.getElementById('nicknameInput').addEventListener('keypress', (e) => {
     }
 });
 
-document.getElementById('sendMessageBtn').addEventListener('click', sendMessage);
+// Add both click and touchstart for iOS compatibility
+const sendBtn = document.getElementById('sendMessageBtn');
+sendBtn.addEventListener('click', sendMessage);
+sendBtn.addEventListener('touchstart', (e) => {
+    e.preventDefault(); // Prevent double-firing on iOS
+    sendMessage();
+}, { passive: false });
 
 document.getElementById('messageInput').addEventListener('keypress', (e) => {
     if (e.key === 'Enter' && (!messageCooldown || isAdmin)) {
