@@ -5,6 +5,12 @@ let isAdmin = false;
 let messageCooldown = false;
 let browserFingerprint = null;
 
+// System message queue
+const systemMessageQueue = [];
+let activeSystemMessages = 0;
+const MAX_CONCURRENT_SYSTEM_MESSAGES = 3;
+let isProcessingQueue = false;
+
 // Generate browser fingerprint
 async function generateFingerprint() {
     const components = [];
@@ -346,13 +352,51 @@ function displayMessage(data) {
 }
 
 function showSystemMessage(message, type = 'info') {
-    displayMessage({
-        id: Date.now(),
+    const systemMsg = {
+        id: Date.now() + Math.random(), // Уникальный ID
         type: 'system',
         subType: type,
         message: message,
         timestamp: Date.now()
-    });
+    };
+    
+    // Добавляем в очередь
+    systemMessageQueue.push(systemMsg);
+    
+    // Запускаем обработку очереди
+    processSystemMessageQueue();
+}
+
+function processSystemMessageQueue() {
+    // Если уже обрабатываем или достигли лимита - выходим
+    if (isProcessingQueue || activeSystemMessages >= MAX_CONCURRENT_SYSTEM_MESSAGES) {
+        return;
+    }
+    
+    // Если очередь пуста - выходим
+    if (systemMessageQueue.length === 0) {
+        return;
+    }
+    
+    isProcessingQueue = true;
+    
+    // Берем первое сообщение из очереди
+    const message = systemMessageQueue.shift();
+    
+    // Увеличиваем счетчик активных сообщений
+    activeSystemMessages++;
+    
+    // Отображаем сообщение
+    displayMessage(message);
+    
+    // Через 3 секунды уменьшаем счетчик и обрабатываем следующее
+    setTimeout(() => {
+        activeSystemMessages--;
+        isProcessingQueue = false;
+        processSystemMessageQueue(); // Обрабатываем следующее сообщение
+    }, 3100); // Чуть больше 3 секунд, чтобы сообщение успело исчезнуть
+    
+    isProcessingQueue = false;
 }
 
 function scrollToBottom() {
