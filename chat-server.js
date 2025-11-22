@@ -525,7 +525,8 @@ io.on('connection', (socket) => {
                     avatarHue: user.avatarHue,
                     isAdmin: user.isAdmin
                 },
-                isAdmin: user.isAdmin
+                isAdmin: user.isAdmin,
+                isRejoin: true
             });
             
             // Отправляем историю сообщений

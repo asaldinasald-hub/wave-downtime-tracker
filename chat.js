@@ -168,7 +168,7 @@ function setupSocketListeners() {
         saveNickname(data.user.nickname, data.user.id, data.user.avatarHue);
         document.getElementById('welcomeNickname').textContent = data.user.nickname;
         showChatInterface();
-        if (isAdmin) {
+        if (isAdmin && !data.isRejoin) {
             showSystemMessage('You are now the chat administrator! You can ban users.', 'admin');
         }
     });
@@ -268,11 +268,15 @@ function showNicknameSetup() {
 
 function showChatInterface() {
     const nicknameSetup = document.getElementById('nicknameSetup');
-    nicknameSetup.style.display = 'none'; // Принудительное скрытие навсегда
+    nicknameSetup.style.display = 'none !important'; // Принудительное скрытие навсегда
     nicknameSetup.classList.add('hidden');
+    nicknameSetup.style.visibility = 'hidden';
+    nicknameSetup.style.height = '0';
+    nicknameSetup.style.overflow = 'hidden';
     
     const chatWelcome = document.getElementById('chatWelcome');
-    chatWelcome.style.display = 'block'; // Принудительное показание
+    chatWelcome.style.display = 'flex'; // Принудительное показание
+    chatWelcome.style.visibility = 'visible';
     chatWelcome.classList.remove('hidden');
     
     document.getElementById('chatContainer').classList.remove('hidden');
