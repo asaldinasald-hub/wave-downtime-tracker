@@ -1,4 +1,17 @@
 // Chat client-side logic
+console.log('🎬 chat.js loaded at', new Date().toISOString());
+
+// Global error handler for iOS debugging
+window.addEventListener('error', (event) => {
+    console.error('🚨 Global error:', event.error);
+    alert('JavaScript Error: ' + event.message + '\nFile: ' + event.filename + '\nLine: ' + event.lineno);
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+    console.error('🚨 Unhandled promise rejection:', event.reason);
+    alert('Promise Error: ' + event.reason);
+});
+
 let socket;
 let currentUser = null;
 let isAdmin = false;
@@ -614,7 +627,16 @@ function banUser(userId, nickname) {
 
 // Initialize chat when page loads
 document.addEventListener('DOMContentLoaded', () => {
-    initializeChat();
+    console.log('📄 DOM Content Loaded - chat.js');
+    console.log('🔍 Calling initializeChat...');
+    
+    try {
+        initializeChat();
+        console.log('✅ initializeChat called successfully');
+    } catch (error) {
+        console.error('❌ initializeChat failed:', error);
+        alert('Chat initialization failed: ' + error.message);
+    }
     
     // Уведомляем сервер что мы на сайте (для подсчета онлайн)
     window.addEventListener('beforeunload', () => {
