@@ -26,6 +26,55 @@ html, body {
     transition: transform 0.2s ease;
 }
 
+.site-branding::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: auto;
+    bottom: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%) translateY(5px);
+    background: rgba(15, 23, 36, 0.95);
+    backdrop-filter: blur(8px);
+    color: rgb(147, 197, 253);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    border: 1px solid rgba(147, 197, 253, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    z-index: 1001;
+}
+
+.site-branding::after {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 3px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid rgb(15, 23, 36);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.site-branding:hover::before,
+.site-branding:hover::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
 .site-branding:hover {
     transform: scale(1.05);
 }

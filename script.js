@@ -583,17 +583,14 @@ function initSiteBrandingCopy() {
         try {
             await navigator.clipboard.writeText('wavestatus.com');
             
-            // Show "Copied!" feedback
-            const originalText = siteBranding.textContent;
-            const originalTitle = siteBranding.getAttribute('title');
+            // Show "Copied!" feedback in tooltip only
+            const originalTooltip = siteBranding.getAttribute('data-tooltip');
             
-            siteBranding.textContent = 'Copied!';
-            siteBranding.setAttribute('title', 'Copied!');
+            siteBranding.setAttribute('data-tooltip', 'Copied!');
             
             // Reset after 2 seconds
             setTimeout(() => {
-                siteBranding.textContent = originalText;
-                siteBranding.setAttribute('title', originalTitle);
+                siteBranding.setAttribute('data-tooltip', originalTooltip);
             }, 2000);
         } catch (err) {
             console.error('Failed to copy:', err);
