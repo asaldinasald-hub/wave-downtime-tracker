@@ -113,7 +113,7 @@ async function initializeChat() {
 
 function setupSocketListeners() {
     socket.on('connect', () => {
-        console.log('Connected to chat server');
+        console.log('Connected to chat server', { socketId: socket.id });
         
         // Send fingerprint to server
         if (browserFingerprint) {
@@ -121,7 +121,10 @@ function setupSocketListeners() {
         }
         
         if (currentUser) {
+            console.log('Rejoining with currentUser:', currentUser);
             socket.emit('rejoin', currentUser);
+        } else {
+            console.log('No currentUser to rejoin');
         }
     });
     

@@ -865,6 +865,38 @@ app.post('/admin/unban-ip', express.json(), (req, res) => {
     }
 });
 
+// Debug endpoint - check user status
+app.get('/debug/user/:nickname', (req, res) => {
+    const nickname = req.params.nickname.toLowerCase();
+    
+    // Find user by nickname
+    let foundUser = null;
+    let foundUserId = null;
+    
+    for (const [userId, user] of users.entries()) {
+        if (user.nickname.toLowerCase() === nickname) {
+            foundUser = user;
+            foundUserId = userId;
+            break;
+        }
+    }
+    
+    const registeredUser = Array.from(registeredUsers.entries()).find(
+        ([id, user]) => user.nickname.toLowerCase() === nickname
+    );
+    
+    res.json({
+        nickname: req.params.nickname,
+        activeUser: foundUser,
+        activeUserId: foundUserId,
+        registeredUser: registeredUser ? registeredUser[1] : null,
+        registeredUserId: registeredUser ? registeredUser[0] : null,
+        isBanned: foundUserId ? bannedUsers.has(foundUserId) : false,
+        totalActiveUsers: users.size,
+        totalRegisteredUsers: registeredUsers.size
+    });
+});
+
 // Wave cache endpoints
 app.post('/api/wave-cache', express.json(), async (req, res) => {
     try {
