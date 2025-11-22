@@ -1,15 +1,30 @@
 // Chat client-side logic
 console.log('🎬 chat.js loaded at', new Date().toISOString());
 
+// Test alert to verify JS is working on iOS
+if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+    console.log('📱 iOS device detected');
+    // Uncomment to test: alert('iOS detected - chat.js loaded');
+}
+
 // Global error handler for iOS debugging
 window.addEventListener('error', (event) => {
     console.error('🚨 Global error:', event.error);
-    alert('JavaScript Error: ' + event.message + '\nFile: ' + event.filename + '\nLine: ' + event.lineno);
+    const errorMsg = 'JS Error: ' + event.message + '\nFile: ' + (event.filename || 'unknown') + '\nLine: ' + (event.lineno || 'unknown');
+    console.error(errorMsg);
+    // Only alert on iOS for debugging
+    if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+        alert(errorMsg);
+    }
 });
 
 window.addEventListener('unhandledrejection', (event) => {
     console.error('🚨 Unhandled promise rejection:', event.reason);
-    alert('Promise Error: ' + event.reason);
+    const errorMsg = 'Promise Error: ' + (event.reason?.message || event.reason);
+    console.error(errorMsg);
+    if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+        alert(errorMsg);
+    }
 });
 
 let socket;
@@ -28,30 +43,34 @@ let isProcessingQueue = false;
 async function generateFingerprint() {
     const components = [];
     
-    // Screen resolution
-    components.push(screen.width + 'x' + screen.height);
-    components.push(screen.colorDepth);
-    
-    // Timezone
-    components.push(new Date().getTimezoneOffset());
-    
-    // Language
-    components.push(navigator.language);
-    
-    // Platform
-    components.push(navigator.platform);
-    
-    // User agent
-    components.push(navigator.userAgent);
-    
-    // Hardware concurrency (CPU cores)
-    components.push(navigator.hardwareConcurrency || 'unknown');
-    
-    // Device memory (if available)
-    components.push(navigator.deviceMemory || 'unknown');
-    
-    // Touch support
-    components.push(navigator.maxTouchPoints || 0);
+    try {
+        // Screen resolution
+        components.push((screen?.width || 0) + 'x' + (screen?.height || 0));
+        components.push(screen?.colorDepth || 0);
+        
+        // Timezone
+        components.push(new Date().getTimezoneOffset());
+        
+        // Language
+        components.push(navigator?.language || 'unknown');
+        
+        // Platform
+        components.push(navigator?.platform || 'unknown');
+        
+        // User agent
+        components.push(navigator?.userAgent || 'unknown');
+        
+        // Hardware concurrency (CPU cores)
+        components.push(navigator?.hardwareConcurrency || 'unknown');
+        
+        // Device memory (if available)
+        components.push(navigator?.deviceMemory || 'unknown');
+        
+        // Touch support
+        components.push(navigator?.maxTouchPoints || 0);
+    } catch (e) {
+        console.error('Error in basic fingerprint:', e);
+    }
     
     // Canvas fingerprint
     try {
@@ -100,12 +119,15 @@ async function initializeChat() {
     console.log('📱 User Agent:', navigator.userAgent);
     console.log('🌐 Platform:', navigator.platform);
     
+    // Generate fingerprint - но не блокируем если не получится
     try {
-        // Generate fingerprint first
         browserFingerprint = await generateFingerprint();
-        console.log('✅ Browser fingerprint generated:', browserFingerprint.substring(0, 16) + '...');
+        console.log('✅ Browser fingerprint generated:', browserFingerprint ? browserFingerprint.substring(0, 16) + '...' : 'empty');
     } catch (error) {
-        console.error('❌ Fingerprint error:', error);
+        console.error('❌ Fingerprint generation failed:', error);
+        // Используем простой fallback fingerprint
+        browserFingerprint = 'fallback-' + Date.now() + '-' + Math.random();
+        console.log('⚠️ Using fallback fingerprint');
     }
     
     // Automatic server detection
@@ -144,9 +166,12 @@ function setupSocketListeners() {
     socket.on('connect', () => {
         console.log('✅ Connected to chat server', { socketId: socket.id });
         
-        // Send fingerprint to server
+        // Send fingerprint to server (optional - не блокируем если нет)
         if (browserFingerprint) {
+            console.log('📤 Sending fingerprint to server');
             socket.emit('setFingerprint', browserFingerprint);
+        } else {
+            console.log('⚠️ No fingerprint to send (using fallback on server)');
         }
         
         if (currentUser) {
