@@ -516,6 +516,22 @@ function initNotifications() {
     notificationAudio = document.getElementById('notificationAudio');
     const notificationBtn = document.getElementById('notificationBtn');
     
+    // Ensure audio is loaded
+    if (notificationAudio) {
+        notificationAudio.load();
+        console.log('✅ Notification audio loaded');
+        
+        notificationAudio.addEventListener('error', (e) => {
+            console.error('❌ Audio loading error:', e);
+        });
+        
+        notificationAudio.addEventListener('canplaythrough', () => {
+            console.log('✅ Audio ready to play');
+        });
+    } else {
+        console.error('❌ Notification audio element not found');
+    }
+    
     // Load notification preference
     const savedPref = localStorage.getItem('notificationsEnabled');
     if (savedPref === 'true') {
@@ -558,14 +574,33 @@ function initNotifications() {
 }
 
 function showWaveUpNotification() {
-    if (!notificationsEnabled) return;
+    if (!notificationsEnabled) {
+        console.log('❌ Notifications not enabled');
+        return;
+    }
     
     console.log('🔔 Showing Wave UP notification');
     
     // Play notification sound
     if (notificationAudio) {
+        console.log('🔊 Attempting to play notification sound...');
         notificationAudio.currentTime = 0;
-        notificationAudio.play().catch(err => console.error('Failed to play notification sound:', err));
+        notificationAudio.volume = 1.0; // Max volume
+        
+        const playPromise = notificationAudio.play();
+        if (playPromise !== undefined) {
+            playPromise
+                .then(() => {
+                    console.log('✅ Notification sound playing');
+                })
+                .catch(err => {
+                    console.error('❌ Failed to play notification sound:', err);
+                    console.log('Audio state:', notificationAudio.readyState);
+                    console.log('Audio src:', notificationAudio.currentSrc);
+                });
+        }
+    } else {
+        console.error('❌ Notification audio element is null');
     }
     
     // Show Windows notification
