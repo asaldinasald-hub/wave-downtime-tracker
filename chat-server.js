@@ -442,6 +442,8 @@ io.on('connection', (socket) => {
     });
     
     socket.on('rejoin', (userData) => {
+        console.log('🔄 Rejoin attempt:', { userData, clientIP, socketId: socket.id });
+        
         // Проверяем не забанен ли IP
         if (bannedIPs.has(clientIP)) {
             socket.emit('banned');
@@ -518,6 +520,9 @@ io.on('connection', (socket) => {
             users.set(userData.id, user);
             socket.userId = user.id;
             
+            console.log('✅ Socket.userId set:', socket.userId, 'for user:', user.nickname);
+            console.log('✅ User added to users Map:', users.has(userData.id));
+            
             socket.emit('nicknameAccepted', {
                 user: {
                     id: user.id,
@@ -541,7 +546,10 @@ io.on('connection', (socket) => {
                 onlineCount: allConnections.size
             });
             
-            console.log(`User rejoined: ${user.nickname} (${userData.id}), total online: ${users.size}`);
+            console.log(`✅ User rejoined successfully: ${user.nickname} (${userData.id}), socket.userId=${socket.userId}, total online: ${users.size}`);
+        } else {
+            console.log('❌ Rejoin failed: userData or userData.id missing:', userData);
+            socket.emit('error', { message: 'Invalid rejoin data' });
         }
     });
     
