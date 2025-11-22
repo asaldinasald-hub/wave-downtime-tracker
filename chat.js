@@ -258,7 +258,10 @@ function showNicknameSetup() {
 }
 
 function showChatInterface() {
+    console.log('showChatInterface called');
     const nicknameSetup = document.getElementById('nicknameSetup');
+    console.log('nicknameSetup before:', nicknameSetup.style.display, nicknameSetup.classList);
+    
     nicknameSetup.style.cssText = 'display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; opacity: 0 !important; position: absolute !important;';
     nicknameSetup.classList.add('hidden');
     nicknameSetup.setAttribute('aria-hidden', 'true');
@@ -269,8 +272,10 @@ function showChatInterface() {
     chatWelcome.setAttribute('aria-hidden', 'false');
     
     const chatContainer = document.getElementById('chatContainer');
+    console.log('chatContainer before:', chatContainer.style.display, chatContainer.classList);
     chatContainer.classList.remove('hidden');
     chatContainer.style.display = 'block';
+    console.log('chatContainer after:', chatContainer.style.display, chatContainer.classList);
 }
 
 function showError(message) {

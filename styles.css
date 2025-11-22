@@ -198,7 +198,7 @@ body {
     right: 5px;
     width: 60px;
     height: auto;
-    z-index: 100;
+    z-index: 9999;
     pointer-events: auto;
     cursor: pointer;
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
@@ -221,7 +221,7 @@ body {
     height: 20px;
     background: rgba(147, 197, 253, 0.75);
     border-radius: 50px;
-    z-index: 12;
+    z-index: 9998;
     pointer-events: none;
     animation: cloudFloat 3s ease-in-out infinite;
     backdrop-filter: blur(60px) saturate(180%);
@@ -262,7 +262,7 @@ body {
     height: 18px;
     background: rgba(147, 197, 253, 0.75);
     border-radius: 50px;
-    z-index: 13;
+    z-index: 9998;
     pointer-events: none;
     animation: cloudFloat 3s ease-in-out infinite 0.5s;
     backdrop-filter: blur(60px) saturate(180%);
@@ -1161,23 +1161,19 @@ body {
         width: 80px;
         top: -45px;
         right: 5px;
-        z-index: 100;
+        z-index: 9999;
     }
     
     .decorative-cloud {
-        top: 10px;
-        right: 15px;
         width: 35px;
         height: 15px;
-        z-index: 101;
+        z-index: 9998;
     }
     
     .decorative-cloud-2 {
-        top: 25px;
-        right: 5px;
         width: 40px;
         height: 18px;
-        z-index: 101;
+        z-index: 9998;
     }
     
     .version-info {
@@ -1357,7 +1353,7 @@ body {
         font-size: 14px;
     }
     
-    .faq-answer {
+    .faq-item.active .faq-answer {
         padding: 14px 16px;
         font-size: 13px;
     }
@@ -1429,6 +1425,7 @@ body {
     .wavetyan-sitting {
         width: 60px;
         top: -35px;
+        z-index: 9999;
     }
     
     .decorative-cloud {
@@ -1509,7 +1506,7 @@ body {
         font-size: 13px;
     }
     
-    .faq-answer {
+    .faq-item.active .faq-answer {
         padding: 12px 14px;
         font-size: 12px;
     }
