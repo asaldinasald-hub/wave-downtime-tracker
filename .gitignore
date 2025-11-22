@@ -27,3 +27,4 @@ Thumbs.db
 
 # Chat data (persistent storage)
 chat-data.json
+.vercel
