@@ -480,10 +480,10 @@ body {
 
 .downgrade-warning {
     backdrop-filter: blur(8px);
-    background-color: rgba(180, 83, 9, 0.6);
+    background-color: rgba(120, 53, 15, 0.3);
     background-image: url('https://getwave.gg/assets/CardBG.svg');
     background-size: cover;
-    border: 0.8px solid rgb(217, 119, 6);
+    border: 0.8px solid rgba(217, 119, 6, 0.5);
     border-radius: 12px;
     padding: 16px 20px;
     margin: 20px 0;
@@ -491,7 +491,7 @@ body {
     line-height: 1.6;
     color: #ffffff;
     font-weight: 500;
-    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
+    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.2);
     text-align: center;
     filter: drop-shadow(rgba(0, 0, 0, 0.04) 0px 10px 8px) drop-shadow(rgba(0, 0, 0, 0.1) 0px 4px 3px);
 }
