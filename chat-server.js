@@ -29,7 +29,8 @@ let mongoClient = null;
 const DATA_FILE = path.join(__dirname, 'chat-data.json');
 
 // In-memory storage (for production, use a database like MongoDB or PostgreSQL)
-const users = new Map(); // userId -> { id, nickname, socketId, avatarHue, joinedAt, isAdmin, ip }
+const users = new Map(); // socketId -> { id, nickname, socketId, avatarHue, joinedAt, isAdmin, ip }
+const userSessions = new Map(); // userId -> Set of socketIds (для отслеживания всех сессий пользователя)
 const registeredUsers = new Map(); // Permanent storage: userId -> { id, nickname, avatarHue, isAdmin, ip }
 const ipToUser = new Map(); // IP -> { nickname, avatarHue } - хранение никнейма и аватара по IP
 const messages = []; // Array of messages
@@ -461,32 +462,12 @@ io.on('connection', (socket) => {
         
         // Handle reconnection with existing nickname
         if (userData && userData.id) {
-            // Проверяем не использует ли этот IP другой никнейм (множественные аккаунты с одного IP)
-            if (ipToUser.has(clientIP)) {
-                const activeNickname = ipToUser.get(clientIP);
-                // Если текущий IP пытается использовать ДРУГОЙ никнейм - блокируем
-                // Но разрешаем тот же никнейм с разных IP (например ПК + телефон)
-                if (activeNickname.nickname !== userData.nickname) {
-                    socket.emit('error', { 
-                        message: `This IP is already using nickname: ${activeNickname.nickname}`,
-                        activeNickname: activeNickname.nickname
-                    });
-                    console.log(`❌ IP ${clientIP} tried to use ${userData.nickname} but this IP has ${activeNickname.nickname}`);
-                    return;
-                }
-            }
+            // РАЗРЕШАЕМ множественные устройства:
+            // - Один пользователь может быть онлайн с ПК и телефона одновременно
+            // - Используем socketId как уникальный идентификатор каждой сессии
+            // - userId используется только для идентификации сообщений и прав
             
-            // Проверяем не используется ли этот никнейм с другого устройства
-            // Отключаем старую сессию если пользователь заходит с нового устройства
-            const existingUser = users.get(userData.id);
-            if (existingUser && existingUser.socketId !== socket.id) {
-                console.log(`👤 User ${userData.nickname} connecting from new device, disconnecting old session`);
-                const oldSocket = io.sockets.sockets.get(existingUser.socketId);
-                if (oldSocket) {
-                    oldSocket.disconnect(true);
-                }
-                users.delete(userData.id);
-            }
+            console.log(`👤 User ${userData.nickname} (${userData.id}) rejoining from ${clientIP}`);
             
             // ИСПРАВЛЕНИЕ: если пользователь не найден в registeredUsers (после редеплоя),
             // используем данные из localStorage клиента
@@ -519,7 +500,7 @@ io.on('connection', (socket) => {
                 return;
             }
             
-            // Создаем/обновляем активного пользователя
+            // Создаем/обновляем активного пользователя для ЭТОГО сокета
             const user = {
                 id: registeredUser.id,
                 nickname: registeredUser.nickname,
@@ -530,11 +511,18 @@ io.on('connection', (socket) => {
                 ip: clientIP
             };
             
-            users.set(userData.id, user);
+            // Сохраняем по socketId для множественных устройств
+            users.set(socket.id, user);
             socket.userId = user.id;
             
-            console.log('✅ Socket.userId set:', socket.userId, 'for user:', user.nickname);
-            console.log('✅ User added to users Map:', users.has(userData.id));
+            // Отслеживаем все сессии этого пользователя
+            if (!userSessions.has(user.id)) {
+                userSessions.set(user.id, new Set());
+            }
+            userSessions.get(user.id).add(socket.id);
+            
+            console.log('✅ Socket.userId set:', socket.userId, 'socketId:', socket.id, 'for user:', user.nickname);
+            console.log('✅ User sessions:', userSessions.get(user.id).size, 'active sessions');
             
             socket.emit('nicknameAccepted', {
                 user: {
@@ -567,9 +555,9 @@ io.on('connection', (socket) => {
     });
     
     socket.on('message', (messageText) => {
-        console.log('📨 Message received:', { userId: socket.userId, hasUser: users.has(socket.userId), messageText });
+        console.log('📨 Message received:', { socketId: socket.id, userId: socket.userId, hasUser: users.has(socket.id), messageText });
         
-        if (!socket.userId || !users.has(socket.userId)) {
+        if (!socket.userId || !users.has(socket.id)) {
             console.log('❌ User not found or no userId set');
             socket.emit('error', { message: 'You must set a nickname first' });
             return;
@@ -581,7 +569,7 @@ io.on('connection', (socket) => {
             return;
         }
         
-        const user = users.get(socket.userId);
+        const user = users.get(socket.id);
         console.log('✅ User sending message:', user.nickname);
         
         if (!messageText || messageText.trim().length === 0 || messageText.length > 100) {
@@ -753,16 +741,24 @@ io.on('connection', (socket) => {
         // Обновляем счетчик для всех
         io.emit('onlineCount', allConnections.size);
         
-        if (socket.userId && users.has(socket.userId)) {
-            const user = users.get(socket.userId);
-            users.delete(socket.userId);
+        if (socket.userId && users.has(socket.id)) {
+            const user = users.get(socket.id);
+            users.delete(socket.id);
             
-            io.emit('userLeft', {
-                nickname: user.nickname,
-                onlineCount: allConnections.size
-            });
+            // Удаляем из userSessions
+            if (userSessions.has(socket.userId)) {
+                userSessions.get(socket.userId).delete(socket.id);
+                if (userSessions.get(socket.userId).size === 0) {
+                    userSessions.delete(socket.userId);
+                    // Только если это была последняя сессия - уведомляем об уходе
+                    io.emit('userLeft', {
+                        nickname: user.nickname,
+                        onlineCount: allConnections.size
+                    });
+                }
+            }
             
-            console.log(`👤 User left: ${user.nickname} | Socket: ${socket.id} | Total online: ${allConnections.size}`);
+            console.log(`👤 User session ended: ${user.nickname} | Socket: ${socket.id} | Remaining sessions: ${userSessions.has(socket.userId) ? userSessions.get(socket.userId).size : 0} | Total online: ${allConnections.size}`);
         } else {
             console.log(`🔌 Connection closed: ${socket.id} | Total online: ${allConnections.size}`);
         }
@@ -882,15 +878,18 @@ app.post('/admin/unban-ip', express.json(), (req, res) => {
 app.get('/debug/user/:nickname', (req, res) => {
     const nickname = req.params.nickname.toLowerCase();
     
-    // Find user by nickname
-    let foundUser = null;
-    let foundUserId = null;
+    // Find all active sessions for this nickname
+    const activeSessions = [];
+    let userId = null;
     
-    for (const [userId, user] of users.entries()) {
+    for (const [socketId, user] of users.entries()) {
         if (user.nickname.toLowerCase() === nickname) {
-            foundUser = user;
-            foundUserId = userId;
-            break;
+            activeSessions.push({
+                socketId: socketId,
+                ip: user.ip,
+                joinedAt: user.joinedAt
+            });
+            userId = user.id;
         }
     }
     
@@ -900,12 +899,13 @@ app.get('/debug/user/:nickname', (req, res) => {
     
     res.json({
         nickname: req.params.nickname,
-        activeUser: foundUser,
-        activeUserId: foundUserId,
+        activeSessions: activeSessions,
+        sessionCount: activeSessions.length,
+        userId: userId,
         registeredUser: registeredUser ? registeredUser[1] : null,
         registeredUserId: registeredUser ? registeredUser[0] : null,
-        isBanned: foundUserId ? bannedUsers.has(foundUserId) : false,
-        totalActiveUsers: users.size,
+        isBanned: userId ? bannedUsers.has(userId) : false,
+        totalActiveConnections: users.size,
         totalRegisteredUsers: registeredUsers.size
     });
 });
