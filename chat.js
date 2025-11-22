@@ -3,9 +3,84 @@ let socket;
 let currentUser = null;
 let isAdmin = false;
 let messageCooldown = false;
+let browserFingerprint = null;
+
+// Generate browser fingerprint
+async function generateFingerprint() {
+    const components = [];
+    
+    // Screen resolution
+    components.push(screen.width + 'x' + screen.height);
+    components.push(screen.colorDepth);
+    
+    // Timezone
+    components.push(new Date().getTimezoneOffset());
+    
+    // Language
+    components.push(navigator.language);
+    
+    // Platform
+    components.push(navigator.platform);
+    
+    // User agent
+    components.push(navigator.userAgent);
+    
+    // Hardware concurrency (CPU cores)
+    components.push(navigator.hardwareConcurrency || 'unknown');
+    
+    // Device memory (if available)
+    components.push(navigator.deviceMemory || 'unknown');
+    
+    // Touch support
+    components.push(navigator.maxTouchPoints || 0);
+    
+    // Canvas fingerprint
+    try {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        ctx.textBaseline = 'top';
+        ctx.font = '14px Arial';
+        ctx.fillStyle = '#f60';
+        ctx.fillRect(125, 1, 62, 20);
+        ctx.fillStyle = '#069';
+        ctx.fillText('Browser Fingerprint', 2, 15);
+        components.push(canvas.toDataURL());
+    } catch (e) {
+        components.push('canvas-error');
+    }
+    
+    // WebGL fingerprint
+    try {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (gl) {
+            const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+            if (debugInfo) {
+                components.push(gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL));
+                components.push(gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL));
+            }
+        }
+    } catch (e) {
+        components.push('webgl-error');
+    }
+    
+    // Combine and hash
+    const fingerprintString = components.join('|');
+    const encoder = new TextEncoder();
+    const data = encoder.encode(fingerprintString);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    
+    return hashHex;
+}
 
 // Connect to chat server
-function initializeChat() {
+async function initializeChat() {
+    // Generate fingerprint first
+    browserFingerprint = await generateFingerprint();
+    console.log('Browser fingerprint generated:', browserFingerprint.substring(0, 16) + '...');
+    
     // Automatic server detection
     let serverUrl;
     
@@ -33,6 +108,12 @@ function initializeChat() {
 function setupSocketListeners() {
     socket.on('connect', () => {
         console.log('Connected to chat server');
+        
+        // Send fingerprint to server
+        if (browserFingerprint) {
+            socket.emit('setFingerprint', browserFingerprint);
+        }
+        
         if (currentUser) {
             socket.emit('rejoin', currentUser);
         }

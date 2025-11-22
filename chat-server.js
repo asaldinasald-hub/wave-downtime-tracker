@@ -36,6 +36,8 @@ const messages = []; // Array of messages
 const bannedUsers = new Set(); // Set of banned userIds
 const bannedNicknames = new Set(); // Set of permanently banned nicknames (lowercase)
 const bannedIPs = new Set(); // Set of permanently banned IP addresses
+const bannedFingerprints = new Set(); // Set of permanently banned browser fingerprints
+const userFingerprints = new Map(); // userId -> fingerprint mapping
 const userLastMessages = new Map(); // userId -> последнее сообщение для проверки дубликатов
 let adminId = null; // First user with nickname 'mefisto' becomes admin
 const MESSAGE_RETENTION_TIME = 24 * 60 * 60 * 1000; // 24 hours
@@ -86,6 +88,8 @@ async function saveData() {
             bannedUsers: Array.from(bannedUsers),
             bannedNicknames: Array.from(bannedNicknames),
             bannedIPs: Array.from(bannedIPs),
+            bannedFingerprints: Array.from(bannedFingerprints),
+            userFingerprints: Array.from(userFingerprints.entries()),
             adminId: adminId,
             timestamp: Date.now()
         };
@@ -197,6 +201,14 @@ async function loadData() {
             if (data.bannedIPs) {
                 data.bannedIPs.forEach(ip => bannedIPs.add(ip));
             }
+            if (data.bannedFingerprints) {
+                data.bannedFingerprints.forEach(fp => bannedFingerprints.add(fp));
+            }
+            if (data.userFingerprints) {
+                data.userFingerprints.forEach(([userId, fp]) => {
+                    userFingerprints.set(userId, fp);
+                });
+            }
             
             // Восстанавливаем админа
             if (data.adminId) {
@@ -289,6 +301,22 @@ io.on('connection', (socket) => {
         return;
     }
     
+    // Store client fingerprint when provided
+    socket.on('setFingerprint', (fingerprint) => {
+        if (fingerprint && typeof fingerprint === 'string') {
+            socket.clientFingerprint = fingerprint;
+            console.log('Fingerprint set for socket:', socket.id, 'FP:', fingerprint.substring(0, 16) + '...');
+            
+            // Check if fingerprint is banned
+            if (bannedFingerprints.has(fingerprint)) {
+                console.log('🚫 Banned fingerprint attempted to connect:', fingerprint.substring(0, 16) + '...');
+                socket.emit('banned');
+                socket.disconnect(true);
+                allConnections.delete(socket.id);
+            }
+        }
+    });
+    
     // Send current online count (всех на сайте)
     io.emit('onlineCount', allConnections.size);
     
@@ -302,6 +330,14 @@ io.on('connection', (socket) => {
     socket.on('setNickname', (nickname) => {
         // Повторная проверка IP при попытке установить никнейм
         if (bannedIPs.has(clientIP)) {
+            socket.emit('banned');
+            socket.disconnect(true);
+            return;
+        }
+        
+        // Проверка fingerprint при установке никнейма
+        if (socket.clientFingerprint && bannedFingerprints.has(socket.clientFingerprint)) {
+            console.log('🚫 Banned fingerprint tried to set nickname:', socket.clientFingerprint.substring(0, 16) + '...');
             socket.emit('banned');
             socket.disconnect(true);
             return;
@@ -354,6 +390,12 @@ io.on('connection', (socket) => {
         users.set(userId, user);
         socket.userId = userId;
         
+        // Сохраняем fingerprint пользователя
+        if (socket.clientFingerprint) {
+            userFingerprints.set(userId, socket.clientFingerprint);
+            console.log('Saved fingerprint for user:', nickname, 'FP:', socket.clientFingerprint.substring(0, 16) + '...');
+        }
+        
         // Сохраняем в постоянное хранилище
         registeredUsers.set(userId, {
             id: user.id,
@@ -402,6 +444,14 @@ io.on('connection', (socket) => {
     socket.on('rejoin', (userData) => {
         // Проверяем не забанен ли IP
         if (bannedIPs.has(clientIP)) {
+            socket.emit('banned');
+            socket.disconnect(true);
+            return;
+        }
+        
+        // Проверяем fingerprint
+        if (socket.clientFingerprint && bannedFingerprints.has(socket.clientFingerprint)) {
+            console.log('🚫 Banned fingerprint tried to rejoin:', socket.clientFingerprint.substring(0, 16) + '...');
             socket.emit('banned');
             socket.disconnect(true);
             return;
@@ -612,6 +662,13 @@ io.on('connection', (socket) => {
             }
         }
         
+        // Блокируем fingerprint пользователя
+        if (userFingerprints.has(targetUserId)) {
+            const fingerprint = userFingerprints.get(targetUserId);
+            bannedFingerprints.add(fingerprint);
+            console.log(`Banned fingerprint: ${fingerprint.substring(0, 16)}... (user: ${targetUser.nickname})`);
+        }
+        
         // Remove all their messages
         const messagesToRemove = [];
         for (let i = messages.length - 1; i >= 0; i--) {
@@ -685,7 +742,8 @@ app.get('/health', (req, res) => {
         totalMessages: messages.length,
         adminExists: !!adminId,
         bannedUsers: bannedUsers.size,
-        bannedIPs: bannedIPs.size
+        bannedIPs: bannedIPs.size,
+        bannedFingerprints: bannedFingerprints.size
     });
 });
 
@@ -710,13 +768,15 @@ app.post('/admin/clear-bans', express.json(), (req, res) => {
     const stats = {
         bannedIPsCleared: bannedIPs.size,
         bannedUsersCleared: bannedUsers.size,
-        bannedNicknamesCleared: bannedNicknames.size
+        bannedNicknamesCleared: bannedNicknames.size,
+        bannedFingerprintsCleared: bannedFingerprints.size
     };
     
     // Очищаем все баны
     bannedIPs.clear();
     bannedUsers.clear();
     bannedNicknames.clear();
+    bannedFingerprints.clear();
     
     saveData(); // Сохраняем после очистки
     
