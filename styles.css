@@ -4,6 +4,12 @@
     box-sizing: border-box;
 }
 
+html, body {
+    overflow-x: hidden;
+    max-width: 100%;
+    position: relative;
+}
+
 .site-branding {
     position: fixed;
     bottom: 20px;
@@ -1030,12 +1036,16 @@ body {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s ease, padding 0.3s ease;
-    padding: 0 20px;
+    padding: 0;
+    opacity: 0;
+    visibility: hidden;
 }
 
 .faq-item.active .faq-answer {
     max-height: 500px;
     padding: 0 20px 16px 20px;
+    opacity: 1;
+    visibility: visible;
 }
 
 .faq-answer p {
@@ -1087,10 +1097,14 @@ body {
 @media (max-width: 768px) {
     body {
         padding: 10px;
+        overflow-x: hidden;
+        width: 100vw;
     }
     
     .container {
         max-width: 100%;
+        width: 100%;
+        overflow-x: hidden;
     }
     
     .header {
@@ -1115,6 +1129,8 @@ body {
     .status-card {
         padding: 24px 16px;
         margin-bottom: 16px;
+        max-width: 100%;
+        overflow-x: hidden;
     }
     
     .notification-bell-btn {
@@ -1212,6 +1228,9 @@ body {
     .chat-section {
         padding: 20px 16px;
         margin-bottom: 16px;
+        max-width: 100%;
+        overflow-x: hidden;
+        box-sizing: border-box;
     }
     
     .chat-header h2 {
@@ -1291,6 +1310,9 @@ body {
     .faq-section {
         padding: 20px 16px;
         margin-bottom: 16px;
+        max-width: 100%;
+        overflow-x: hidden;
+        box-sizing: border-box;
     }
     
     .faq-section h2 {

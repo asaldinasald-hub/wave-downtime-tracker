@@ -205,23 +205,15 @@ function loadSavedNickname() {
     const savedAvatarHue = localStorage.getItem('chatAvatarHue');
     
     if (savedNickname && savedUserId && savedAvatarHue) {
-        // Немедленно и навсегда скрываем форму ввода никнейма
-        const nicknameSetup = document.getElementById('nicknameSetup');
-        nicknameSetup.style.display = 'none'; // Принудительное скрытие
-        nicknameSetup.classList.add('hidden');
-        
-        const chatWelcome = document.getElementById('chatWelcome');
-        chatWelcome.style.display = 'block'; // Принудительное показание
-        chatWelcome.classList.remove('hidden');
-        
-        document.getElementById('welcomeNickname').textContent = savedNickname;
-        
         // Автоматически входим с сохраненными данными
         socket.emit('rejoin', {
             id: savedUserId,
             nickname: savedNickname,
             avatarHue: parseInt(savedAvatarHue)
         });
+        
+        // НЕ скрываем форму сразу - ждем ответа от сервера
+        // Сервер отправит nicknameAccepted, и тогда вызовется showChatInterface()
     }
 }
 
@@ -268,18 +260,18 @@ function showNicknameSetup() {
 
 function showChatInterface() {
     const nicknameSetup = document.getElementById('nicknameSetup');
-    nicknameSetup.style.display = 'none !important'; // Принудительное скрытие навсегда
+    nicknameSetup.style.cssText = 'display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; opacity: 0 !important; position: absolute !important;';
     nicknameSetup.classList.add('hidden');
-    nicknameSetup.style.visibility = 'hidden';
-    nicknameSetup.style.height = '0';
-    nicknameSetup.style.overflow = 'hidden';
+    nicknameSetup.setAttribute('aria-hidden', 'true');
     
     const chatWelcome = document.getElementById('chatWelcome');
-    chatWelcome.style.display = 'flex'; // Принудительное показание
-    chatWelcome.style.visibility = 'visible';
+    chatWelcome.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important;';
     chatWelcome.classList.remove('hidden');
+    chatWelcome.setAttribute('aria-hidden', 'false');
     
-    document.getElementById('chatContainer').classList.remove('hidden');
+    const chatContainer = document.getElementById('chatContainer');
+    chatContainer.classList.remove('hidden');
+    chatContainer.style.display = 'block';
 }
 
 function showError(message) {
