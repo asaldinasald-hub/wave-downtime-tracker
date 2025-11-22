@@ -1110,6 +1110,7 @@ body {
         max-width: 100vw;
         background-size: 70%; /* Zoom out - show more background */
         background-position: center;
+        background-repeat: no-repeat;
     }
     
     .container {
@@ -1391,6 +1392,7 @@ body {
     body {
         padding: 6px;
         background-size: 60%; /* Zoom out more on small mobile */
+        background-repeat: no-repeat;
     }
     
     .container {
