@@ -163,10 +163,12 @@ function setupSocketListeners() {
     });
     
     socket.on('nicknameAccepted', (data) => {
+        console.log('nicknameAccepted received:', data);
         currentUser = data.user;
         isAdmin = data.isAdmin;
         saveNickname(data.user.nickname, data.user.id, data.user.avatarHue);
         document.getElementById('welcomeNickname').textContent = data.user.nickname;
+        console.log('Current user set:', currentUser);
         showChatInterface();
         if (isAdmin && !data.isRejoin) {
             showSystemMessage('You are now the chat administrator! You can ban users.', 'admin');
@@ -457,18 +459,42 @@ document.getElementById('messageInput').addEventListener('keypress', (e) => {
 });
 
 function sendMessage() {
+    console.log('sendMessage called', { 
+        currentUser, 
+        isAdmin, 
+        messageCooldown,
+        socketConnected: socket?.connected 
+    });
+    
     // Админ не имеет cooldown
     if (messageCooldown && !isAdmin) {
+        console.log('Blocked by cooldown');
         return;
     }
     
     const messageInput = document.getElementById('messageInput');
     const message = messageInput.value.trim();
     
+    console.log('Message to send:', message, 'Length:', message.length);
+    
     if (!message || message.length > 100) {
+        console.log('Message invalid - empty or too long');
         return;
     }
     
+    if (!socket || !socket.connected) {
+        console.error('Socket not connected!');
+        showError('Not connected to chat server');
+        return;
+    }
+    
+    if (!currentUser) {
+        console.error('No currentUser set!');
+        showError('You must set a nickname first');
+        return;
+    }
+    
+    console.log('Emitting message via socket.emit');
     socket.emit('message', message);
     messageInput.value = '';
     
