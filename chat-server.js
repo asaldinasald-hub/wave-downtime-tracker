@@ -546,17 +546,22 @@ io.on('connection', (socket) => {
     });
     
     socket.on('message', (messageText) => {
+        console.log('📨 Message received:', { userId: socket.userId, hasUser: users.has(socket.userId), messageText });
+        
         if (!socket.userId || !users.has(socket.userId)) {
+            console.log('❌ User not found or no userId set');
             socket.emit('error', { message: 'You must set a nickname first' });
             return;
         }
         
         if (bannedUsers.has(socket.userId)) {
+            console.log('❌ User is banned:', socket.userId);
             socket.emit('banned');
             return;
         }
         
         const user = users.get(socket.userId);
+        console.log('✅ User sending message:', user.nickname);
         
         if (!messageText || messageText.trim().length === 0 || messageText.length > 100) {
             socket.emit('error', { message: 'Message must be 1-100 characters' });
