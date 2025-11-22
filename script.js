@@ -622,7 +622,30 @@ function initSiteBrandingCopy() {
     });
 }
 
+// Test downgrade warning visibility on load
+function testDowngradeWarning() {
+    const warningEl = document.getElementById('downgradeWarning');
+    console.log('🧪 Testing downgrade warning element:', warningEl);
+    if (warningEl) {
+        console.log('🧪 Element found, computed styles:', window.getComputedStyle(warningEl).display);
+        console.log('🧪 Element parent:', warningEl.parentElement);
+        console.log('🧪 Element bounding rect:', warningEl.getBoundingClientRect());
+        // Force show for 3 seconds to test
+        warningEl.style.display = 'block';
+        warningEl.style.visibility = 'visible';
+        warningEl.style.opacity = '1';
+        console.log('🧪 Forced warning to display for testing');
+        setTimeout(() => {
+            warningEl.style.display = 'none';
+            console.log('🧪 Test complete, hiding warning');
+        }, 3000);
+    } else {
+        console.error('🧪 ❌ Warning element not found!');
+    }
+}
+
 // Start the application
 init();
 initNotifications();
 initSiteBrandingCopy();
+setTimeout(testDowngradeWarning, 1000); // Test after 1 second
