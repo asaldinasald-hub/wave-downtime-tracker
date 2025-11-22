@@ -294,36 +294,57 @@ function showNicknameSetup() {
 }
 
 function showChatInterface() {
-    console.log('showChatInterface called');
-    const nicknameSetup = document.getElementById('nicknameSetup');
-    console.log('nicknameSetup before:', nicknameSetup.style.display, nicknameSetup.classList);
+    console.log('🎯 showChatInterface called');
     
+    const nicknameSetup = document.getElementById('nicknameSetup');
+    const chatWelcome = document.getElementById('chatWelcome');
+    const chatContainer = document.getElementById('chatContainer');
+    const sendBtn = document.getElementById('sendMessageBtn');
+    const messageInput = document.getElementById('messageInput');
+    
+    if (!nicknameSetup || !chatWelcome || !chatContainer) {
+        console.error('❌ Required elements not found!', {
+            nicknameSetup: !!nicknameSetup,
+            chatWelcome: !!chatWelcome,
+            chatContainer: !!chatContainer
+        });
+        alert('Error: Chat elements not found. Please refresh the page.');
+        return;
+    }
+    
+    console.log('📦 Elements found, hiding nickname setup...');
     nicknameSetup.style.cssText = 'display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; opacity: 0 !important; position: absolute !important;';
     nicknameSetup.classList.add('hidden');
     nicknameSetup.setAttribute('aria-hidden', 'true');
     
-    const chatWelcome = document.getElementById('chatWelcome');
+    console.log('👋 Showing welcome message...');
     chatWelcome.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important;';
     chatWelcome.classList.remove('hidden');
     chatWelcome.setAttribute('aria-hidden', 'false');
     
-    const chatContainer = document.getElementById('chatContainer');
-    console.log('chatContainer before:', chatContainer.style.display, chatContainer.classList);
+    console.log('💬 Showing chat container...');
+    console.log('Before:', { display: chatContainer.style.display, classList: Array.from(chatContainer.classList) });
     chatContainer.classList.remove('hidden');
-    chatContainer.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important;';
-    console.log('chatContainer after:', chatContainer.style.display, chatContainer.classList);
+    chatContainer.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important; flex-direction: column !important;';
+    console.log('After:', { display: chatContainer.style.display, classList: Array.from(chatContainer.classList) });
     
     // Ensure send button is enabled
-    const sendBtn = document.getElementById('sendMessageBtn');
-    const messageInput = document.getElementById('messageInput');
     if (sendBtn) {
         sendBtn.disabled = false;
-        console.log('Send button enabled');
+        sendBtn.style.pointerEvents = 'auto';
+        console.log('✅ Send button enabled');
+    } else {
+        console.error('❌ Send button not found!');
     }
+    
     if (messageInput) {
         messageInput.disabled = false;
-        console.log('Message input enabled');
+        console.log('✅ Message input enabled');
+    } else {
+        console.error('❌ Message input not found!');
     }
+    
+    console.log('✅ showChatInterface completed');
 }
 
 function showError(message) {
