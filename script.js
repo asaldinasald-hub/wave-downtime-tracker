@@ -316,14 +316,24 @@ async function updateUI(data) {
             statusTextElement.className = 'status-text status-down';
             timerSectionElement.classList.remove('hidden');
             timerLabelElement.textContent = 'Down for';
-            document.getElementById('downgradeWarning').style.display = 'block';
+            const warningEl = document.getElementById('downgradeWarning');
+            if (warningEl) {
+                warningEl.style.display = 'block';
+                console.log('✅ Downgrade warning shown');
+            } else {
+                console.error('❌ downgradeWarning element not found');
+            }
             
             // Продолжаем показывать таймер
             if (currentState.apiDownSince) {
                 updateTimer();
             }
         } else {
-            document.getElementById('downgradeWarning').style.display = 'none';
+            const warningEl = document.getElementById('downgradeWarning');
+            if (warningEl) {
+                warningEl.style.display = 'none';
+                console.log('ℹ️ Downgrade warning hidden');
+            }
             statusTextElement.innerHTML = 'WAVE IS UP! <img src="happyemoji.webp" alt="Happy" class="status-emoji">';
             statusTextElement.className = 'status-text status-up';
             
@@ -418,12 +428,22 @@ async function updateUI(data) {
         statusTextElement.className = 'status-text status-down';
         timerSectionElement.classList.remove('hidden');
         timerLabelElement.textContent = 'Down for';
-        document.getElementById('downgradeWarning').style.display = 'block';
+        const warningEl = document.getElementById('downgradeWarning');
+        if (warningEl) {
+            warningEl.style.display = 'block';
+            console.log('✅ Downgrade warning shown (main UI)');
+        } else {
+            console.error('❌ downgradeWarning element not found (main UI)');
+        }
         updateTimer();
     } else {
         statusTextElement.innerHTML = 'WAVE IS UP! <img src="happyemoji.webp" alt="Happy" class="status-emoji">';
         statusTextElement.className = 'status-text status-up';
-        document.getElementById('downgradeWarning').style.display = 'none';
+        const warningEl = document.getElementById('downgradeWarning');
+        if (warningEl) {
+            warningEl.style.display = 'none';
+            console.log('ℹ️ Downgrade warning hidden (main UI)');
+        }
         
         if (currentState.lastDowntimeDuration > 0) {
             timerSectionElement.classList.remove('hidden');
