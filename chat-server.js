@@ -634,7 +634,8 @@ io.on('connection', (socket) => {
         
         io.emit('userLeft', {
             nickname: targetUser.nickname,
-            onlineCount: users.size
+            onlineCount: users.size,
+            banned: true
         });
         
         console.log(`User banned: ${targetUser.nickname} by admin`);

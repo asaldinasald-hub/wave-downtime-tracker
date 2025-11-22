@@ -48,7 +48,11 @@ function setupSocketListeners() {
     });
     
     socket.on('userLeft', (data) => {
-        showSystemMessage(`${data.nickname} left the chat`, 'leave');
+        if (data.banned) {
+            showSystemMessage(`${data.nickname} banned from chat`, 'banned');
+        } else {
+            showSystemMessage(`${data.nickname} left the chat`, 'leave');
+        }
         updateOnlineCount(data.onlineCount);
     });
     
@@ -212,6 +216,8 @@ function displayMessage(data) {
             messageDiv.classList.add('system-join');
         } else if (data.subType === 'leave') {
             messageDiv.classList.add('system-leave');
+        } else if (data.subType === 'banned') {
+            messageDiv.classList.add('system-banned');
         }
         messageDiv.innerHTML = `<span class="system-text">${escapeHtml(data.message)}</span>`;
         

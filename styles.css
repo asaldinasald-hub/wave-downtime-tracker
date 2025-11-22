@@ -693,6 +693,10 @@ body {
     color: rgb(251, 191, 36);
 }
 
+.chat-message.system-banned .system-text {
+    color: rgb(239, 68, 68);
+}
+
 .chat-avatar {
     width: 40px;
     height: 40px;
