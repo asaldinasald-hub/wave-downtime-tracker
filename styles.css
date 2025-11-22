@@ -1168,10 +1168,10 @@ body {
     }
     
     .wavetyan-sitting {
-        width: 80px;
-        top: -45px;
-        right: 5px;
-        z-index: 9999;
+        width: 100px;
+        top: -50px;
+        right: 10px;
+        z-index: 99999;
     }
     
     .decorative-cloud {
@@ -1435,9 +1435,9 @@ body {
     }
     
     .wavetyan-sitting {
-        width: 60px;
-        top: -35px;
-        z-index: 9999;
+        width: 90px;
+        top: -45px;
+        z-index: 99999;
     }
     
     .decorative-cloud {
