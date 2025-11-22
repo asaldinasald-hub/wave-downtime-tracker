@@ -199,7 +199,7 @@ body {
     right: 5px;
     width: 60px;
     height: auto;
-    z-index: 10000;
+    z-index: 100;
     pointer-events: auto;
     cursor: pointer;
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
@@ -222,7 +222,7 @@ body {
     height: 20px;
     background: rgba(147, 197, 253, 0.75);
     border-radius: 50px;
-    z-index: 9998;
+    z-index: 200;
     pointer-events: none;
     animation: cloudFloat 3s ease-in-out infinite;
     backdrop-filter: blur(60px) saturate(180%);
@@ -263,7 +263,7 @@ body {
     height: 18px;
     background: rgba(147, 197, 253, 0.75);
     border-radius: 50px;
-    z-index: 9998;
+    z-index: 200;
     pointer-events: none;
     animation: cloudFloat 3s ease-in-out infinite 0.5s;
     backdrop-filter: blur(60px) saturate(180%);
@@ -1172,7 +1172,7 @@ body {
         width: 80px;
         top: -45px;
         right: 5px;
-        z-index: 10000;
+        z-index: 100;
     }
     
     .decorative-cloud {
@@ -1438,7 +1438,7 @@ body {
     .wavetyan-sitting {
         width: 60px;
         top: -35px;
-        z-index: 10000;
+        z-index: 100;
     }
     
     .decorative-cloud {
