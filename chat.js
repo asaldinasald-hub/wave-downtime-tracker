@@ -83,9 +83,17 @@ async function generateFingerprint() {
 
 // Connect to chat server
 async function initializeChat() {
-    // Generate fingerprint first
-    browserFingerprint = await generateFingerprint();
-    console.log('Browser fingerprint generated:', browserFingerprint.substring(0, 16) + '...');
+    console.log('🚀 initializeChat called');
+    console.log('📱 User Agent:', navigator.userAgent);
+    console.log('🌐 Platform:', navigator.platform);
+    
+    try {
+        // Generate fingerprint first
+        browserFingerprint = await generateFingerprint();
+        console.log('✅ Browser fingerprint generated:', browserFingerprint.substring(0, 16) + '...');
+    } catch (error) {
+        console.error('❌ Fingerprint error:', error);
+    }
     
     // Automatic server detection
     let serverUrl;
@@ -98,22 +106,30 @@ async function initializeChat() {
         serverUrl = 'https://wave-chat-server.onrender.com'; // Update this after deployment!
     }
     
-    console.log('Connecting to chat server:', serverUrl);
+    console.log('🔌 Connecting to chat server:', serverUrl);
     
-    socket = io(serverUrl, {
-        transports: ['websocket', 'polling'],
-        reconnection: true,
-        reconnectionAttempts: 5,
-        reconnectionDelay: 1000
-    });
-    
-    setupSocketListeners();
-    loadSavedNickname();
+    try {
+        socket = io(serverUrl, {
+            transports: ['websocket', 'polling'],
+            reconnection: true,
+            reconnectionAttempts: 5,
+            reconnectionDelay: 1000,
+            timeout: 20000
+        });
+        
+        console.log('✅ Socket.io object created');
+        
+        setupSocketListeners();
+        loadSavedNickname();
+    } catch (error) {
+        console.error('❌ Socket.io error:', error);
+        alert('Failed to initialize chat. Error: ' + error.message);
+    }
 }
 
 function setupSocketListeners() {
     socket.on('connect', () => {
-        console.log('Connected to chat server', { socketId: socket.id });
+        console.log('✅ Connected to chat server', { socketId: socket.id });
         
         // Send fingerprint to server
         if (browserFingerprint) {
@@ -121,15 +137,27 @@ function setupSocketListeners() {
         }
         
         if (currentUser) {
-            console.log('Rejoining with currentUser:', currentUser);
+            console.log('🔄 Rejoining with currentUser:', currentUser);
             socket.emit('rejoin', currentUser);
         } else {
-            console.log('No currentUser to rejoin');
+            console.log('ℹ️ No currentUser to rejoin');
         }
     });
     
-    socket.on('disconnect', () => {
-        console.log('Disconnected from chat server');
+    socket.on('connect_error', (error) => {
+        console.error('❌ Connection error:', error.message);
+    });
+    
+    socket.on('connect_timeout', () => {
+        console.error('⏱️ Connection timeout');
+    });
+    
+    socket.on('error', (error) => {
+        console.error('❌ Socket error:', error);
+    });
+    
+    socket.on('disconnect', (reason) => {
+        console.log('🔌 Disconnected from chat server. Reason:', reason);
     });
     
     socket.on('userJoined', (data) => {
@@ -162,17 +190,20 @@ function setupSocketListeners() {
     });
     
     socket.on('error', (error) => {
+        console.error('📩 Server error event:', error);
         showError(error.message);
     });
     
     socket.on('nicknameAccepted', (data) => {
-        console.log('nicknameAccepted received:', data);
+        console.log('✅ nicknameAccepted received:', data);
         currentUser = data.user;
         isAdmin = data.isAdmin;
         saveNickname(data.user.nickname, data.user.id, data.user.avatarHue);
         document.getElementById('welcomeNickname').textContent = data.user.nickname;
-        console.log('Current user set:', currentUser);
+        console.log('✅ Current user set:', currentUser);
+        console.log('✅ Calling showChatInterface...');
         showChatInterface();
+        console.log('✅ showChatInterface completed');
         if (isAdmin && !data.isRejoin) {
             showSystemMessage('You are now the chat administrator! You can ban users.', 'admin');
         }
