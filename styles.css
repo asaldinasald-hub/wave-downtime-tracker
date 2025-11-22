@@ -479,17 +479,21 @@ body {
 }
 
 .downgrade-warning {
-    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-    border: 2px solid #d97706;
+    backdrop-filter: blur(8px);
+    background-color: rgba(180, 83, 9, 0.6);
+    background-image: url('https://getwave.gg/assets/CardBG.svg');
+    background-size: cover;
+    border: 0.8px solid rgb(217, 119, 6);
     border-radius: 12px;
     padding: 16px 20px;
     margin: 20px 0;
     font-size: 14px;
     line-height: 1.6;
-    color: #1f2937;
+    color: #ffffff;
     font-weight: 500;
-    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.3);
     text-align: center;
+    filter: drop-shadow(rgba(0, 0, 0, 0.04) 0px 10px 8px) drop-shadow(rgba(0, 0, 0, 0.1) 0px 4px 3px);
 }
 
 .warning-highlight {
