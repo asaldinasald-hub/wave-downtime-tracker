@@ -102,6 +102,57 @@ body {
     color: rgba(147, 197, 253, 0.7);
 }
 
+.notification-bell-btn::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 12px);
+    left: 50%;
+    transform: translateX(-50%) translateY(5px);
+    background: rgba(15, 23, 36, 0.95);
+    backdrop-filter: blur(8px);
+    color: rgb(147, 197, 253);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    border: 1px solid rgba(147, 197, 253, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    z-index: 1000;
+}
+
+.notification-bell-btn::after {
+    content: '';
+    position: absolute;
+    bottom: calc(100% + 2px);
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: rgba(15, 23, 36, 0.95);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.notification-bell-btn:hover::before,
+.notification-bell-btn:hover::after {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+.notification-bell-btn.active::before {
+    content: 'Notifications enabled ✓';
+    color: rgb(34, 197, 94);
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
 .notification-bell-btn:hover {
     background: rgba(147, 197, 253, 0.2);
     border-color: rgba(147, 197, 253, 0.5);
