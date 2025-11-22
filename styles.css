@@ -47,6 +47,9 @@ html, body {
     border: 1px solid rgba(147, 197, 253, 0.3);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     z-index: 1001;
+    text-shadow: 0 0 10px rgba(147, 197, 253, 0.8),
+                 0 0 20px rgba(147, 197, 253, 0.5),
+                 0 0 30px rgba(147, 197, 253, 0.3);
 }
 
 .site-branding::after {
@@ -189,6 +192,9 @@ body {
     border: 1px solid rgba(147, 197, 253, 0.3);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     z-index: 1000;
+    text-shadow: 0 0 10px rgba(147, 197, 253, 0.8),
+                 0 0 20px rgba(147, 197, 253, 0.5),
+                 0 0 30px rgba(147, 197, 253, 0.3);
 }
 
 .notification-bell-btn::after {
