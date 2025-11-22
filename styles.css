@@ -478,6 +478,26 @@ body {
     text-align: center;
 }
 
+.downgrade-warning {
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    border: 2px solid #d97706;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #1f2937;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
+    text-align: center;
+}
+
+.warning-highlight {
+    color: #dc2626;
+    font-weight: 700;
+    text-shadow: 0 0 8px rgba(220, 38, 38, 0.5);
+}
+
 .timer-label {
     font-size: 20px;
     opacity: 0.7;

@@ -316,12 +316,14 @@ async function updateUI(data) {
             statusTextElement.className = 'status-text status-down';
             timerSectionElement.classList.remove('hidden');
             timerLabelElement.textContent = 'Down for';
+            document.getElementById('downgradeWarning').style.display = 'block';
             
             // Продолжаем показывать таймер
             if (currentState.apiDownSince) {
                 updateTimer();
             }
         } else {
+            document.getElementById('downgradeWarning').style.display = 'none';
             statusTextElement.innerHTML = 'WAVE IS UP! <img src="happyemoji.webp" alt="Happy" class="status-emoji">';
             statusTextElement.className = 'status-text status-up';
             
@@ -416,10 +418,12 @@ async function updateUI(data) {
         statusTextElement.className = 'status-text status-down';
         timerSectionElement.classList.remove('hidden');
         timerLabelElement.textContent = 'Down for';
+        document.getElementById('downgradeWarning').style.display = 'block';
         updateTimer();
     } else {
         statusTextElement.innerHTML = 'WAVE IS UP! <img src="happyemoji.webp" alt="Happy" class="status-emoji">';
         statusTextElement.className = 'status-text status-up';
+        document.getElementById('downgradeWarning').style.display = 'none';
         
         if (currentState.lastDowntimeDuration > 0) {
             timerSectionElement.classList.remove('hidden');
