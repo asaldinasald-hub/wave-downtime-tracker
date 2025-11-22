@@ -22,6 +22,16 @@ html, body {
                  0 0 30px rgba(255, 255, 255, 0.3);
     z-index: 1000;
     letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.site-branding:hover {
+    transform: scale(1.05);
+}
+
+.site-branding:active {
+    transform: scale(0.95);
 }
 
 body {

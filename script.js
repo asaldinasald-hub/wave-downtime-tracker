@@ -574,6 +574,34 @@ function showWaveUpNotification() {
 
 
 
+// Site branding copy functionality
+function initSiteBrandingCopy() {
+    const siteBranding = document.getElementById('siteBranding');
+    if (!siteBranding) return;
+    
+    siteBranding.addEventListener('click', async () => {
+        try {
+            await navigator.clipboard.writeText('wavestatus.com');
+            
+            // Show "Copied!" feedback
+            const originalText = siteBranding.textContent;
+            const originalTitle = siteBranding.getAttribute('title');
+            
+            siteBranding.textContent = 'Copied!';
+            siteBranding.setAttribute('title', 'Copied!');
+            
+            // Reset after 2 seconds
+            setTimeout(() => {
+                siteBranding.textContent = originalText;
+                siteBranding.setAttribute('title', originalTitle);
+            }, 2000);
+        } catch (err) {
+            console.error('Failed to copy:', err);
+        }
+    });
+}
+
 // Start the application
 init();
 initNotifications();
+initSiteBrandingCopy();
