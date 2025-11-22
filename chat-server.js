@@ -461,18 +461,31 @@ io.on('connection', (socket) => {
         
         // Handle reconnection with existing nickname
         if (userData && userData.id) {
-            // Проверяем есть ли уже активный никнейм для этого IP
+            // Проверяем не использует ли этот IP другой никнейм (множественные аккаунты с одного IP)
             if (ipToUser.has(clientIP)) {
                 const activeNickname = ipToUser.get(clientIP);
-                // Если пользователь пытается войти с другим никнеймом - блокируем
+                // Если текущий IP пытается использовать ДРУГОЙ никнейм - блокируем
+                // Но разрешаем тот же никнейм с разных IP (например ПК + телефон)
                 if (activeNickname.nickname !== userData.nickname) {
                     socket.emit('error', { 
                         message: `This IP is already using nickname: ${activeNickname.nickname}`,
                         activeNickname: activeNickname.nickname
                     });
-                    console.log(`IP ${clientIP} tried to use ${userData.nickname} but has ${activeNickname.nickname}`);
+                    console.log(`❌ IP ${clientIP} tried to use ${userData.nickname} but this IP has ${activeNickname.nickname}`);
                     return;
                 }
+            }
+            
+            // Проверяем не используется ли этот никнейм с другого устройства
+            // Отключаем старую сессию если пользователь заходит с нового устройства
+            const existingUser = users.get(userData.id);
+            if (existingUser && existingUser.socketId !== socket.id) {
+                console.log(`👤 User ${userData.nickname} connecting from new device, disconnecting old session`);
+                const oldSocket = io.sockets.sockets.get(existingUser.socketId);
+                if (oldSocket) {
+                    oldSocket.disconnect(true);
+                }
+                users.delete(userData.id);
             }
             
             // ИСПРАВЛЕНИЕ: если пользователь не найден в registeredUsers (после редеплоя),
