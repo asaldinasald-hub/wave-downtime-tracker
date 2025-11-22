@@ -537,6 +537,14 @@ io.on('connection', (socket) => {
             return;
         }
         
+        // Автомодерация: проверка на CAPS LOCK (все буквы в верхнем регистре)
+        const lettersOnly = trimmedMessage.replace(/[^a-zA-Z]/g, '');
+        if (lettersOnly.length >= 3 && lettersOnly === lettersOnly.toUpperCase()) {
+            socket.emit('error', { message: 'Please do not use all CAPS' });
+            console.log(`Blocked CAPS message from ${user.nickname}: ${trimmedMessage}`);
+            return;
+        }
+        
         // Сохраняем последнее сообщение пользователя
         userLastMessages.set(socket.userId, trimmedMessage);
         
