@@ -84,6 +84,53 @@ body {
     overflow: visible;
 }
 
+.notification-bell-btn {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    background: rgba(147, 197, 253, 0.1);
+    border: 1px solid rgba(147, 197, 253, 0.3);
+    border-radius: 12px;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10;
+    color: rgba(147, 197, 253, 0.7);
+}
+
+.notification-bell-btn:hover {
+    background: rgba(147, 197, 253, 0.2);
+    border-color: rgba(147, 197, 253, 0.5);
+    color: rgb(147, 197, 253);
+    transform: translateY(-2px);
+}
+
+.notification-bell-btn.active {
+    background: rgba(147, 197, 253, 0.3);
+    border-color: rgb(147, 197, 253);
+    color: rgb(147, 197, 253);
+}
+
+.notification-bell-btn.active .bell-icon {
+    animation: bellRing 0.5s ease-in-out;
+}
+
+@keyframes bellRing {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-15deg); }
+    50% { transform: rotate(15deg); }
+    75% { transform: rotate(-10deg); }
+}
+
+.bell-icon {
+    width: 24px;
+    height: 24px;
+}
+
 .wavetyan-sitting {
     position: absolute;
     top: -60px;

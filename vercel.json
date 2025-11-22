@@ -13,6 +13,10 @@
     {
       "source": "/api/roblox",
       "destination": "/api/roblox.js"
+    },
+    {
+      "source": "/api/test-notification",
+      "destination": "/api/test-notification.js"
     }
   ]
 }

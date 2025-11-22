@@ -25,6 +25,10 @@ let currentState = {
     apiAvailable: true
 };
 
+// Notification state
+let notificationsEnabled = false;
+let notificationAudio = null;
+
 // Load saved data from localStorage and MongoDB
 async function loadSavedData() {
     try {
@@ -415,7 +419,10 @@ async function updateUI(data) {
         currentState.downSince = Date.now();
         currentState.version = data.version;
     } else if (!isCurrentlyDown && currentState.isDown) {
-        // Wave came back up (но результаты уже сохранены при смене версии)
+        // Wave came back up - TRIGGER NOTIFICATION!
+        console.log('🎉 Wave is now UP! Triggering notification...');
+        showWaveUpNotification();
+        
         currentState.isDown = false;
         currentState.downSince = null;
         currentState.apiDownSince = null;
@@ -504,5 +511,107 @@ function toggleNyaSound() {
     }
 }
 
+// Notification functionality
+function initNotifications() {
+    notificationAudio = document.getElementById('notificationAudio');
+    const notificationBtn = document.getElementById('notificationBtn');
+    
+    // Load notification preference
+    const savedPref = localStorage.getItem('notificationsEnabled');
+    if (savedPref === 'true') {
+        notificationsEnabled = true;
+        notificationBtn.classList.add('active');
+    }
+    
+    notificationBtn.addEventListener('click', async () => {
+        if (!notificationsEnabled) {
+            // Request notification permission
+            if ('Notification' in window) {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    notificationsEnabled = true;
+                    notificationBtn.classList.add('active');
+                    localStorage.setItem('notificationsEnabled', 'true');
+                    
+                    // Show confirmation
+                    new Notification('Wave Downtime Tracker', {
+                        body: 'Notifications enabled! You will be notified when Wave is UP.',
+                        icon: 'wavebluelogo.webp',
+                        tag: 'wave-notification-test'
+                    });
+                    
+                    console.log('Notifications enabled');
+                } else {
+                    alert('Please allow notifications to use this feature');
+                }
+            } else {
+                alert('Your browser does not support notifications');
+            }
+        } else {
+            // Disable notifications
+            notificationsEnabled = false;
+            notificationBtn.classList.remove('active');
+            localStorage.setItem('notificationsEnabled', 'false');
+            console.log('Notifications disabled');
+        }
+    });
+}
+
+function showWaveUpNotification() {
+    if (!notificationsEnabled) return;
+    
+    console.log('🔔 Showing Wave UP notification');
+    
+    // Play notification sound
+    if (notificationAudio) {
+        notificationAudio.currentTime = 0;
+        notificationAudio.play().catch(err => console.error('Failed to play notification sound:', err));
+    }
+    
+    // Show Windows notification
+    if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('WAVE IS UP! 🎉', {
+            body: 'Wave exploit is now available!',
+            icon: 'wavebluelogo.webp',
+            tag: 'wave-status-up',
+            requireInteraction: true
+        });
+    }
+}
+
+// Test notification API (only for mefisto)
+async function testNotification() {
+    try {
+        // Check if user is mefisto (from chat)
+        const chatNickname = localStorage.getItem('chatNickname');
+        
+        // Call API endpoint
+        const response = await fetch('/api/test-notification', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                nickname: chatNickname || ''
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            console.log('🧪 Testing notification (mefisto only)');
+            showWaveUpNotification();
+        } else {
+            console.log('❌', result.error);
+        }
+    } catch (error) {
+        console.error('Failed to test notification:', error);
+    }
+}
+
+// Expose test function to window for API access
+window.testWaveNotification = testNotification;
+
 // Start the application
 init();
+initNotifications();
