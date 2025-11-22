@@ -177,11 +177,10 @@ function setupSocketListeners() {
         // Получены сохраненные данные по IP - используем их для автозаполнения
         console.log('Received saved IP data:', data);
         if (data && data.nickname && data.avatarHue !== undefined) {
-            // Если есть сохраненные данные, сразу скрываем форму и показываем приветствие
+            // Если есть сохраненные данные, используем showChatInterface()
             document.getElementById('nicknameInput').value = data.nickname;
-            document.getElementById('nicknameSetup').classList.add('hidden');
-            document.getElementById('chatWelcome').classList.remove('hidden');
             document.getElementById('welcomeNickname').textContent = data.nickname;
+            showChatInterface();
         }
     });
     

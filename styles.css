@@ -1036,7 +1036,7 @@ body {
 .faq-answer {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s ease, padding 0.3s ease;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
     padding: 0;
     opacity: 0;
     visibility: hidden;
@@ -1174,7 +1174,7 @@ body {
     
     .decorative-cloud-2 {
         top: 25px;
-        right: 50px;
+        right: 5px;
         width: 40px;
         height: 18px;
         z-index: 101;
