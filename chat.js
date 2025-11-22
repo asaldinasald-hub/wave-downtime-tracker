@@ -279,12 +279,24 @@ function showChatInterface() {
 }
 
 function showError(message) {
-    const errorElement = document.getElementById('nicknameError');
-    errorElement.textContent = message;
-    errorElement.style.display = 'block';
-    setTimeout(() => {
-        errorElement.style.display = 'none';
-    }, 3000);
+    // Check if user is in chat (has nickname set)
+    if (currentUser) {
+        // Show error under chat input
+        const chatErrorElement = document.getElementById('chatErrorMessage');
+        chatErrorElement.textContent = message;
+        chatErrorElement.classList.remove('hidden');
+        setTimeout(() => {
+            chatErrorElement.classList.add('hidden');
+        }, 5000);
+    } else {
+        // Show error in nickname setup
+        const errorElement = document.getElementById('nicknameError');
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+        setTimeout(() => {
+            errorElement.style.display = 'none';
+        }, 3000);
+    }
 }
 
 function updateOnlineCount(count) {
